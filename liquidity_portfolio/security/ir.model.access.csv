@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_liquidity_tenant_user,liquidity.tenant user,model_liquidity_tenant,group_liquidity_portfolio_user,1,0,0,0
+access_liquidity_tenant_manager,liquidity.tenant manager,model_liquidity_tenant,group_liquidity_portfolio_manager,1,1,1,1
+access_liquidity_tenant_company_user,liquidity.tenant.company user,model_liquidity_tenant_company,group_liquidity_portfolio_user,1,1,0,0
+access_liquidity_tenant_company_manager,liquidity.tenant.company manager,model_liquidity_tenant_company,group_liquidity_portfolio_manager,1,1,1,1

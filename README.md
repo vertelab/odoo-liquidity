@@ -129,3 +129,65 @@ times, and the result is stored as percentiles per day.
 event markers in the OWL band, the per-day drill-down, the responsible-use
 text in the view, and the Zabbix `duration_ms` metric. None of them change the
 stored numbers.
+
+### `liquidity_portfolio` — one overview across many customers (step 1, landed)
+
+An accounting firm with many Odoo customers has one question no single database
+can answer: *which client needs me today?* This module answers it.
+
+**The unit of analysis is `res.company`, not the instance.** One customer Odoo
+may hold four companies; the portfolio shows four rows, because that is what the
+firm actually works on.
+
+**Reading, never recomputing.** The source always has `liquidity_forecast`
+installed. This module reads its finished figures over JSON-RPC and shows them as
+they are. It does not compute a single KPI of its own — if the portfolio and the
+customer's own screen ever disagreed, the login link would prove the portfolio
+wrong.
+
+**No cache.** No snapshot table, no nightly copy. Every figure is fetched when
+the view opens, in parallel, with a hard timeout per source.
+
+**Degrade the numbers, never the row.** A row exists from the moment its company
+was imported and keeps existing whatever the source does afterwards. A row that
+disappears because a customer's server is down looks exactly like a customer who
+left — and that is the most dangerous wrong signal this module could send.
+
+#### The reading that must not be got wrong
+
+`liquidity_forecast` reports `days_to_crisis = 0` for **no crisis within the
+horizon**, not for *crisis today*. A negative opening balance gives 1. The
+portfolio carries a separate `crisis_kind` field so the view cannot render 0 as
+an alarm on every healthy customer.
+
+`state` matters too:
+
+| Source state | What it means | What the portfolio shows |
+|---|---|---|
+| `computed` | figures valid | the figures |
+| `error` | last run failed, previous result kept | the figures, marked stale |
+| `draft` | no opening balance (no bank connection) | "no opening balance", never zeros |
+
+#### Setup
+
+```bash
+checkmodule -d <db> -m liquidity_portfolio
+```
+
+The API key belongs to the same user who bookkeeps for that customer, and lives
+in keykeep — never in a plain field. Note that an Odoo API key is not a
+permission model of its own: it authenticates as its user and inherits that
+user's rights. This module only calls read methods, but the key is as broad as
+the user it belongs to.
+
+Tests:
+
+```bash
+checkmodule -d <db> -m liquidity_portfolio -t -l test --test-tags /liquidity_portfolio
+```
+
+#### Not in step 1
+
+Work orders, customer-initiated requests, mirrored chat, SSO/impersonation and
+Fortnox/Visma drivers are separate changes. See
+`openspec/changes/portfolio-steg2-*` in the planning repository.

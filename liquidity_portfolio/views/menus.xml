@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_liquidity_portfolio_root"
+              name="Liquidity Portfolio"
+              parent="account.menu_finance"
+              sequence="15"
+              groups="group_liquidity_portfolio_user"/>
+
+    <menuitem id="menu_liquidity_portfolio_overview"
+              name="Overview"
+              parent="menu_liquidity_portfolio_root"
+              action="action_liquidity_tenant_company"
+              sequence="10"/>
+
+    <menuitem id="menu_liquidity_portfolio_config"
+              name="Configuration"
+              parent="menu_liquidity_portfolio_root"
+              sequence="90"
+              groups="group_liquidity_portfolio_manager"/>
+
+    <menuitem id="menu_liquidity_portfolio_sources"
+              name="Sources"
+              parent="menu_liquidity_portfolio_config"
+              action="action_liquidity_tenant"
+              sequence="10"/>
+
+</odoo>
