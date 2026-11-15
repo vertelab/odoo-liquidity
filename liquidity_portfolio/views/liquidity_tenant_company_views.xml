@@ -62,7 +62,7 @@
                                     <field name="days_to_crisis" class="fw-bold"/> d
                                 </span>
                                 <span t-if="kpi_status == 'unreachable'" class="text-muted">
-                                    Not answering
+                                    No answer — open to try again
                                 </span>
                                 <span t-if="kpi_status == 'draft'" class="text-muted">
                                     No opening balance
@@ -156,6 +156,24 @@
                     </group>
                     <field name="kpi_message" readonly="1"
                            invisible="not kpi_message"/>
+                    <div class="mt-2">
+                        <button name="action_load_curve" type="object"
+                                string="Load the 90-day curve"
+                                class="btn-secondary"
+                                help="Fetched on demand. The overview reads only the headline figures; the curve is one row per day and is not worth fetching for a screen nobody opened."/>
+                    </div>
+                    <group string="Verify at the customer" invisible="not tenant_id">
+                        <div colspan="2">
+                            <p class="text-muted">
+                                These are the customer's own figures, read from
+                                their Odoo. Log in there to see the same numbers
+                                in their own screen — the link is a plain
+                                bookmark and carries no credential.
+                            </p>
+                            <field name="login_url" widget="url"
+                                   invisible="not login_url"/>
+                        </div>
+                    </group>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>

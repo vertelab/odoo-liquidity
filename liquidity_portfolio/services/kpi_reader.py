@@ -28,6 +28,7 @@ _logger = logging.getLogger(__name__)
 # Level 1 + 2: what the overview needs per row. Deliberately narrow — this is
 # fetched for every company on every page load.
 LEVEL_1_2_FIELDS = [
+    "id",
     "risk_level",
     "days_to_crisis",
     "lowest_balance",

@@ -1,0 +1,832 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* liquidity_portfolio
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260701\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-15 16:37+0000\n"
+"PO-Revision-Date: 2026-11-15 16:37+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: liquidity_portfolio
+#: model:ir.model.constraint,message:liquidity_portfolio.constraint_liquidity_tenant_name_uniq
+msgid "A source with this name already exists."
+msgstr "En källa med detta namn finns redan."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_needaction
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_needaction
+msgid "Action Needed"
+msgstr "Åtgärd krävs"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_ids
+msgid "Activities"
+msgstr "Aktiviteter"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Dekoration för aktivitetsundantag"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_state
+msgid "Activity State"
+msgstr "Aktivitetsstatus"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Ikon för aktivitetstyp"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.actions.act_window,help:liquidity_portfolio.action_liquidity_tenant
+msgid ""
+"Add the Odoo instance you want to read liquidity from. The API key\n"
+"               belongs to the user who bookkeeps for that customer and is stored\n"
+"               in keykeep."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_attachment_count
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_attachment_count
+msgid "Attachment Count"
+msgstr "Antal bilagor"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__base_url
+msgid "Base URL"
+msgstr "Bastjänst-URL"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__display_label
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Bookkeeping"
+msgstr "Bokföring"
+
+#. module: liquidity_portfolio
+#: model:ir.model,name:liquidity_portfolio.model_liquidity_tenant_company
+msgid "Bookkeeping in the liquidity portfolio"
+msgstr "Bokföring i likviditetsportföljen"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__company_ids
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Companies"
+msgstr "Bolag"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__name
+msgid "Company"
+msgstr "Bolag"
+
+#. module: liquidity_portfolio
+#. odoo-python
+#: code:addons/liquidity_portfolio/models/liquidity_tenant.py:0
+msgid "Company %s"
+msgstr "Bolag %s"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__company_count
+msgid "Company count"
+msgstr "Antal bolag"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__company_ref
+msgid "Company reference"
+msgstr "Bolagsreferens"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Computed"
+msgstr "Beräknad"
+
+#. module: liquidity_portfolio
+#: model:ir.ui.menu,name:liquidity_portfolio.menu_liquidity_portfolio_config
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.actions.act_window,help:liquidity_portfolio.action_liquidity_tenant_company
+msgid ""
+"Connect a source instance under Configuration, then import its companies."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Connect and import companies"
+msgstr "Anslut och importera bolag"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant__state__ok
+msgid "Connected"
+msgstr "Ansluten"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Connection"
+msgstr "Anslutning"
+
+#. module: liquidity_portfolio
+#. odoo-python
+#: code:addons/liquidity_portfolio/models/liquidity_tenant.py:0
+msgid "Could not reach %(name)s: %(msg)s"
+msgstr "Kunde inte nå %(name)s: %(msg)s"
+
+#. module: liquidity_portfolio
+#. odoo-python
+#: code:addons/liquidity_portfolio/models/liquidity_tenant.py:0
+msgid "Could not read the company list: %s"
+msgstr "Kunde inte läsa bolagslistan: %s"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__create_uid
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__create_uid
+msgid "Created by"
+msgstr "Skapad av"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__create_date
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__create_date
+msgid "Created on"
+msgstr "Skapad den"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__crisis_kind__crisis
+msgid "Crisis"
+msgstr "Kris"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__crisis_kind
+msgid "Crisis Kind"
+msgstr "Krisläge"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__currency_id
+msgid "Currency"
+msgstr "Valuta"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Customer name"
+msgstr "Kundnamn"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__risk_level__danger
+msgid "Danger"
+msgstr "Fara"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__db_name
+msgid "Database"
+msgstr "Databas"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Days"
+msgstr "Dagar"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__days_to_crisis
+msgid "Days To Crisis"
+msgstr "Dagar till kris"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__display_name
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__display_name
+msgid "Display Name"
+msgstr "Visningsnamn"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__rpc_error
+msgid "Error"
+msgstr "Fel"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Fetch company list again"
+msgstr "Hämta bolagslista igen"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+msgid ""
+"Fetched on demand. The overview reads only the headline figures; the curve "
+"is one row per day and is not worth fetching for a screen nobody opened."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__first_seen_at
+msgid "First seen"
+msgstr "Först sedd"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_follower_ids
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_follower_ids
+msgid "Followers"
+msgstr "Följare"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_partner_ids
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Följare (partner)"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Font awesome-ikon, t.ex. fa-tasks"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__base_url
+msgid "For example https://kund.vertel.se. No trailing slash."
+msgstr "Till exempel https://kund.vertel.se. Ingen avslutande snedstreck."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__computed_at
+msgid "Forecast computed"
+msgstr "Prognos beräknad"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__kpi_status
+msgid "Forecast status"
+msgstr "Prognosstatus"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__risk_level__good
+msgid "Good"
+msgstr "God"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "Group by"
+msgstr "Gruppera efter"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__request_timeout
+msgid ""
+"Hard limit per call in the overview. A source that does not answer in time "
+"shows as not answering — the view never waits longer than this."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__has_message
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__has_message
+msgid "Has Message"
+msgstr "Har meddelande"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "Hidden"
+msgstr "Dold"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__id
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__id
+msgid "ID"
+msgstr "ID"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_exception_icon
+msgid "Icon"
+msgstr "Ikon"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Ikon som markerar en undantagsaktivitet."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__message_needaction
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Om ikryssad kräver nya meddelanden din uppmärksamhet."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__message_has_error
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__message_has_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Om ikryssad har vissa meddelanden leveransfel."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_is_follower
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_is_follower
+msgid "Is Follower"
+msgstr "Är följare"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__last_connected_at
+msgid ""
+"Kept when a later connection fails, so a temporary outage does not erase the"
+" fact that the instance worked yesterday."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant__state__auth_error
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__auth_error
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "Key refused"
+msgstr "Nyckeln nekas"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__keykeep_ref
+msgid "Keykeep reference"
+msgstr "Keykeep-referens"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__write_uid
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__write_uid
+msgid "Last Updated by"
+msgstr "Senast uppdaterad av"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__write_date
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__write_date
+msgid "Last Updated on"
+msgstr "Senast uppdaterad den"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__last_error
+msgid "Last error"
+msgstr "Senaste fel"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__stale
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "Last run failed"
+msgstr "Förra körningen föll"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__last_seen_at
+msgid "Last seen in source"
+msgstr "Senast sedd i källan"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__last_connected_at
+msgid "Last successful connection"
+msgstr "Senaste lyckade anslutning"
+
+#. module: liquidity_portfolio
+#: model:ir.actions.act_window,name:liquidity_portfolio.action_liquidity_tenant_company
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "Liquidity"
+msgstr "Likviditet"
+
+#. module: liquidity_portfolio
+#: model:ir.ui.menu,name:liquidity_portfolio.menu_liquidity_portfolio_root
+msgid "Liquidity Portfolio"
+msgstr "Likviditetsportfölj"
+
+#. module: liquidity_portfolio
+#: model:res.groups,name:liquidity_portfolio.group_liquidity_portfolio_manager
+msgid "Liquidity Portfolio / Manager"
+msgstr "Likviditetsportfölj / Ansvarig"
+
+#. module: liquidity_portfolio
+#: model:res.groups,name:liquidity_portfolio.group_liquidity_portfolio_user
+msgid "Liquidity Portfolio / User"
+msgstr "Likviditetsportfölj / Användare"
+
+#. module: liquidity_portfolio
+#: model:ir.model,name:liquidity_portfolio.model_liquidity_tenant
+msgid "Liquidity source instance"
+msgstr "Källinstans för likviditet"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+msgid "Load the 90-day curve"
+msgstr "Läs in 90-dagarskurvan"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__login
+msgid "Login"
+msgstr "Användarnamn"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__login_url
+msgid "Login link"
+msgstr "Inloggningslänk"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Lowest"
+msgstr "Lägsta"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__lowest_balance_date
+msgid "Lowest Balance Date"
+msgstr "Datum för lägsta saldo"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__lowest_balance
+msgid "Lowest balance"
+msgstr "Lägsta saldo"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Message"
+msgstr "Meddelande"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_has_error
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_has_error
+msgid "Message Delivery error"
+msgstr "Leveransfel för meddelande"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_ids
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_ids
+msgid "Messages"
+msgstr "Meddelanden"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__missing_since
+msgid "Missing since"
+msgstr "Saknas sedan"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Min aktivitetsdeadline"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "My activities"
+msgstr "Mina aktiviteter"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__name
+msgid "Name"
+msgstr "Namn"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Nästa aktivitetsdeadline"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_summary
+msgid "Next Activity Summary"
+msgstr "Sammanfattning av nästa aktivitet"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_type_id
+msgid "Next Activity Type"
+msgstr "Typ av nästa aktivitet"
+
+#. module: liquidity_portfolio
+#. odoo-python
+#: code:addons/liquidity_portfolio/models/liquidity_tenant.py:0
+msgid "No API key available for this source."
+msgstr "Ingen API-nyckel tillgänglig för denna källa."
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "No answer — open to try again"
+msgstr "Svarar inte — öppna för att försöka igen"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.actions.act_window,help:liquidity_portfolio.action_liquidity_tenant_company
+msgid "No bookkeeping yet"
+msgstr "Ingen bokföring än"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__crisis_kind__none_in_horizon
+msgid "No crisis in horizon"
+msgstr "Ingen kris inom horisonten"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__no_forecast
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "No forecast"
+msgstr "Ingen prognos"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "No longer at the customer"
+msgstr "Finns inte längre hos kunden"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__draft
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "No opening balance"
+msgstr "Inget ingående saldo"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.actions.act_window,help:liquidity_portfolio.action_liquidity_tenant
+msgid "No sources yet"
+msgstr "Inga källor än"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant__state__error
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__unreachable
+msgid "Not answering"
+msgstr "Svarar inte"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant__state__new
+msgid "Not connected"
+msgstr "Inte ansluten"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__unknown
+msgid "Not fetched"
+msgstr "Ej hämtad"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_needaction_counter
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Antal åtgärder"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__message_has_error_counter
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__message_has_error_counter
+msgid "Number of errors"
+msgstr "Antal fel"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__message_needaction_counter
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Antal meddelanden som kräver åtgärd"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__message_has_error_counter
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Antal meddelanden med leveransfel"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__kpi_status__ok
+msgid "OK"
+msgstr "OK"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "On"
+msgstr "Den"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Opening"
+msgstr "Ingående"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__opening_balance
+msgid "Opening Balance"
+msgstr "Ingående saldo"
+
+#. module: liquidity_portfolio
+#: model:ir.ui.menu,name:liquidity_portfolio.menu_liquidity_portfolio_overview
+msgid "Overview"
+msgstr "Översikt"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__login_url
+msgid ""
+"Plain bookmark into the customer's own Odoo. Carries no credential: a "
+"browser cannot log in with an API key, and a session token in a URL would "
+"leak into history and logs."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__liquidity_version
+msgid ""
+"Read from the source at connection time. Shown so a definition change in one"
+" customer does not silently make comparisons false."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__days_to_crisis
+msgid ""
+"Read straight from the source. 0 means 'no crisis within the horizon', not "
+"'crisis today' — always read crisis_kind alongside it, never this field "
+"alone."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid ""
+"Read with crisis_kind: 0 means no crisis within the horizon, not crisis "
+"today."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__keykeep_ref
+msgid ""
+"Reference to the API key in keykeep. The key itself is never stored in this "
+"field."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+msgid "Refresh"
+msgstr "Uppdatera"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__activity_user_id
+msgid "Responsible User"
+msgstr "Ansvarig användare"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+msgid "Risk"
+msgstr "Risk"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__risk_level
+msgid "Risk Level"
+msgstr "Risknivå"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__active
+msgid "Selected"
+msgstr "Vald"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__missing_since
+msgid ""
+"Set when the source answered but no longer lists this company. The row is "
+"kept so local notes are not lost, but it is shown as 'no longer at the "
+"customer' rather than as a live bookkeeping."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__tenant_id
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_search
+msgid "Source"
+msgstr "Källa"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__currency_name
+msgid "Source currency"
+msgstr "Källvaluta"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Source instance"
+msgstr "Källinstans"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_list
+msgid "Source instances"
+msgstr "Källinstanser"
+
+#. module: liquidity_portfolio
+#: model:ir.actions.act_window,name:liquidity_portfolio.action_liquidity_tenant
+#: model:ir.ui.menu,name:liquidity_portfolio.menu_liquidity_portfolio_sources
+msgid "Sources"
+msgstr "Källor"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__state
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_list
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Status"
+msgstr "Status"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant_company__kpi_message
+msgid "Status message"
+msgstr "Statusmeddelande"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "Test connection"
+msgstr "Testa anslutning"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__db_name
+msgid "The Odoo database name in the source instance."
+msgstr "Odoo-databasens namn i källinstansen."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant__login
+msgid ""
+"The Odoo user the API key belongs to. Use the same user who bookkeeps for "
+"this customer, so the key is tied to a real account and can be revoked when "
+"that person leaves."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__company_ref
+msgid ""
+"The company's id in the source instance. This is the stable key: a rename in"
+" the customer's system must update this row, never create a new one."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__computed_at
+msgid ""
+"The source recomputes nightly, so this figure can be up to a day old. A "
+"portfolio that looks live but shows yesterday's number is a quiet lie."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__crisis_kind
+msgid ""
+"The source reports 0 for 'no crisis within the horizon', not for 'crisis "
+"today'. This field carries that distinction so the view cannot get it wrong."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+msgid ""
+"These are the customer's own figures, read from\n"
+"                                their Odoo. Log in there to see the same numbers\n"
+"                                in their own screen — the link is a plain\n"
+"                                bookmark and carries no credential."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model:ir.model.constraint,message:liquidity_portfolio.constraint_liquidity_tenant_company_tenant_company_ref_uniq
+msgid "This company is already imported for this source."
+msgstr "Detta bolag är redan importerat för denna källa."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__request_timeout
+msgid "Timeout (seconds)"
+msgstr "Tidsgräns (sekunder)"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Typ av undantagsaktivitet på posten."
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__crisis_kind__unknown
+msgid "Unknown"
+msgstr "Okänd"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,help:liquidity_portfolio.field_liquidity_tenant_company__active
+msgid ""
+"Untick to hide a bookkeeping from the overview. Hiding is reversible; the "
+"row and its notes are kept."
+msgstr ""
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_form
+msgid "Verify at the customer"
+msgstr "Verifiera hos kunden"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant_company__risk_level__warning
+msgid "Warning"
+msgstr "Varning"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_company_kanban
+msgid "d"
+msgstr "d"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "databasnamn"
+msgstr "databasnamn"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "https://kund.vertel.se"
+msgstr "https://kund.vertel.se"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "keykeep credential label"
+msgstr "keykeep-uppgiftens etikett"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields.selection,name:liquidity_portfolio.selection__liquidity_tenant__state__no_liquidity
+msgid "liquidity_forecast missing"
+msgstr "liquidity_forecast saknas"
+
+#. module: liquidity_portfolio
+#: model:ir.model.fields,field_description:liquidity_portfolio.field_liquidity_tenant__liquidity_version
+msgid "liquidity_forecast version"
+msgstr "Version av liquidity_forecast"
+
+#. module: liquidity_portfolio
+#: model_terms:ir.ui.view,arch_db:liquidity_portfolio.view_liquidity_tenant_form
+msgid "odoouser@kund.se"
+msgstr "odoouser@kund.se"

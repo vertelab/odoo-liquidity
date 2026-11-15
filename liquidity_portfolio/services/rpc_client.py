@@ -82,7 +82,13 @@ class OdooRpcClient:
         except requests.exceptions.Timeout:
             return RpcResult(
                 UNREACHABLE,
-                message="no answer within %s seconds" % self.timeout,
+                # Phrased as an observation, not a verdict. A customer whose
+                # server is slow at 08:00 is not broken; the reader needs to
+                # know what happened and what to do, not that something failed.
+                message=(
+                    "no answer within %s seconds — open the bookkeeping to "
+                    "try again" % self.timeout
+                ),
             )
         except requests.exceptions.RequestException as exc:
             return RpcResult(UNREACHABLE, message=str(exc)[:200])

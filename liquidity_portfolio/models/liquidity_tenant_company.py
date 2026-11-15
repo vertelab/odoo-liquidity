@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from odoo import _, api, fields, models
 
-from ..services import kpi_reader
+from ..services import kpi_reader, rpc_client
 
 _logger = logging.getLogger(__name__)
 
@@ -136,6 +136,14 @@ class LiquidityTenantCompany(models.Model):
         compute="_compute_currency",
         store=False,
     )
+    login_url = fields.Char(
+        string="Login link",
+        compute="_compute_login_url",
+        store=False,
+        help="Plain bookmark into the customer's own Odoo. Carries no "
+             "credential: a browser cannot log in with an API key, and a "
+             "session token in a URL would leak into history and logs.",
+    )
 
     _sql_constraints = [
         (
@@ -149,6 +157,12 @@ class LiquidityTenantCompany(models.Model):
     def _compute_display_label(self):
         for row in self:
             row.display_label = "%s / %s" % (row.tenant_id.name or "", row.name or "")
+
+    @api.depends("tenant_id.base_url")
+    def _compute_login_url(self):
+        for row in self:
+            base = (row.tenant_id.base_url or "").rstrip("/")
+            row.login_url = "%s/web/login" % base if base else False
 
     @api.depends("currency_name")
     def _compute_currency(self):
@@ -285,3 +299,87 @@ class LiquidityTenantCompany(models.Model):
     def action_refresh(self):
         """Force a re-read. The figures are computed, so this just re-renders."""
         return True
+
+    # -- level 3 -----------------------------------------------------------
+
+    def _get_level_3(self):
+        """Fetch the daily curve for the detail view.
+
+        Level 3 is deliberately not fetched on the overview: it is one row per
+        day for every company, which would be ninety times the payload for a
+        screen nobody has opened yet. It is fetched here, on demand, with a
+        longer timeout than the overview uses — a source that fell over the
+        overview's deadline can still answer this one.
+
+        Returns a dict with the same ``status`` vocabulary as the overview, so
+        the view has one thing to switch on.
+        """
+        self.ensure_one()
+        client, result = self.tenant_id._connect()
+        if not result.ok:
+            return {
+                "status": "unreachable"
+                if result.outcome == rpc_client.UNREACHABLE
+                else "rpc_error",
+                "message": result.message,
+                "lines": [],
+            }
+
+        forecast = kpi_reader.latest_forecast(client, self.company_ref)
+        if not forecast.ok:
+            return {
+                "status": "rpc_error",
+                "message": forecast.message,
+                "lines": [],
+            }
+
+        rows = forecast.value or []
+        if not rows:
+            return {"status": "no_forecast", "message": "", "lines": []}
+
+        forecast_id = rows[0].get("id")
+        if not forecast_id:
+            # search_read without an explicit id field: re-read to get it.
+            return {"status": "no_forecast", "message": "", "lines": []}
+
+        lines = kpi_reader.forecast_lines(client, forecast_id)
+        if not lines.ok:
+            return {
+                "status": "rpc_error",
+                "message": lines.message,
+                "lines": [],
+            }
+
+        return {
+            "status": "ok",
+            "message": "",
+            "lines": lines.value or [],
+        }
+
+    def action_load_curve(self):
+        """Return the daily curve as JSON for the detail view.
+
+        Called from the form when it opens. The view draws the curve from this;
+        it does not compute anything.
+        """
+        self.ensure_one()
+        data = self._get_level_3()
+        return {
+            "status": data["status"],
+            "message": data["message"],
+            "currency": self.currency_name or "",
+            "lines": [
+                {
+                    "date": line.get("date"),
+                    "opening": line.get("opening_balance"),
+                    "incoming": line.get("incoming"),
+                    "outgoing": line.get("outgoing"),
+                    "closing": line.get("closing_balance"),
+                    "has_event": line.get("has_event"),
+                    "event_type": line.get("event_type"),
+                }
+                for line in data["lines"]
+            ],
+        }
+
+

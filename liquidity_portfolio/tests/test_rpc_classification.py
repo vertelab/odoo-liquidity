@@ -106,3 +106,60 @@ class TestRpcClassification(TransactionCase):
         self.assertTrue(result.ok)
         self.assertEqual(result.value, 7)
         self.assertIsNotNone(client)
+
+
+class TestReadOnly(TransactionCase):
+    """The module must never write to a customer's Odoo.
+
+    The API key belongs to the user who bookkeeps, so it carries that user's
+    write rights. The only thing keeping the portfolio read-only is that it
+    calls read methods — which makes this the test that holds the security
+    claim up.
+    """
+
+    def test_only_read_methods_are_used(self):
+        import inspect
+
+        from ..services import kpi_reader, rpc_client
+
+        forbidden = (
+            "create", "write", "unlink", "copy", "action_", "button_",
+            "message_post", "sudo",
+        )
+
+        # Every method the module can call on a source, gathered from the
+        # client and the reader.
+        source = ""
+        for module in (rpc_client, kpi_reader):
+            source += inspect.getsource(module)
+
+        for word in forbidden:
+            # "action_" and "button_" only matter as RPC model methods, which
+            # would appear as a quoted string passed to search_read/execute_kw.
+            if word in ("action_", "button_"):
+                self.assertNotIn(
+                    '"%s' % word, source,
+                    "the module must not call %s* on a source" % word,
+                )
+            else:
+                self.assertNotIn(
+                    '"%s"' % word, source,
+                    "the module must not call %s on a source" % word,
+                )
+
+    def test_search_read_is_the_only_data_call(self):
+        """execute_kw is used, but only ever with search_read."""
+        import inspect
+
+        from ..services import rpc_client
+
+        source = inspect.getsource(rpc_client)
+        # The client wraps execute_kw; the method name is a literal.
+        self.assertIn('"search_read"', source)
+        self.assertIn('"execute_kw"', source)
+        # No other object method is named anywhere in the client.
+        for other in ('"read"', '"search"', '"fields_get"'):
+            self.assertNotIn(
+                other, source.replace('"search_read"', ""),
+                "only search_read should be issued against a source",
+            )
