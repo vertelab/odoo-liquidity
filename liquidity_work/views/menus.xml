@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_liquidity_work_orders"
+              name="Work Orders"
+              parent="liquidity_portfolio.menu_liquidity_portfolio_root"
+              action="action_liquidity_work_order"
+              sequence="20"
+              groups="group_liquidity_work_user"/>
+
+    <menuitem id="menu_liquidity_work_plans"
+              name="Plans"
+              parent="liquidity_portfolio.menu_liquidity_portfolio_root"
+              action="action_liquidity_work_plan"
+              sequence="30"
+              groups="group_liquidity_work_user"/>
+
+    <menuitem id="menu_liquidity_work_config"
+              name="Work Configuration"
+              parent="liquidity_portfolio.menu_liquidity_portfolio_root"
+              sequence="91"
+              groups="group_liquidity_work_manager"/>
+
+    <menuitem id="menu_liquidity_work_templates"
+              name="Plan Templates"
+              parent="menu_liquidity_work_config"
+              action="action_liquidity_work_template"
+              sequence="10"/>
+
+</odoo>

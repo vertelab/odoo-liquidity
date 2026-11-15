@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Scheduled through cron_tick, not ir.cron: the engine owns cadence,
+            deterministic spread, locking and run history.
+
+            Sequence 20 places this after the forecast recompute (10), so a
+            night's run first refreshes the figures and then creates the work
+            those figures may call for.
+        -->
+        <record id="cron_task_liquidity_work_generate" model="cron.task">
+            <field name="name">Liquidity: generate work orders</field>
+            <field name="technical_name">liquidity_work_generate</field>
+            <field name="module">liquidity_work</field>
+            <field name="model_name">liquidity.work.order</field>
+            <field name="method_name">_cron_generate_orders</field>
+            <field name="cadence">daily</field>
+            <field name="sequence">20</field>
+        </record>
+    </data>
+</odoo>

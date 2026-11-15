@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         LISTA — det snabba svaret på "vad är kvar".
+         description_excerpt, aldrig HTML: rå markup i en lista är oläsbar.
+         ================================================================ -->
+    <record id="view_liquidity_work_order_list" model="ir.ui.view">
+        <field name="name">liquidity.work.order.list</field>
+        <field name="model">liquidity.work.order</field>
+        <field name="arch" type="xml">
+            <list string="Work orders"
+                  decoration-danger="is_overdue"
+                  decoration-muted="state in ('done', 'skipped')">
+                <field name="date_deadline"/>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="description_excerpt" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-danger="is_overdue"
+                       decoration-info="state == 'in_progress'"
+                       decoration-success="state == 'done'"
+                       decoration-muted="state == 'skipped'"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="responsible_role" optional="hide"/>
+                <field name="minutes_spent" optional="show"/>
+                <field name="is_overdue" column_invisible="True"/>
+                <field name="period_start" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         KANBAN — flödet, inte listan. Förfallna syns på färgen.
+         ================================================================ -->
+    <record id="view_liquidity_work_order_kanban" model="ir.ui.view">
+        <field name="name">liquidity.work.order.kanban</field>
+        <field name="model">liquidity.work.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" create="false" class="o_kanban_small_column">
+                <field name="is_overdue"/>
+                <field name="state"/>
+                <field name="is_all_day"/>
+                <field name="company_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_card p-2"
+                             t-att-style="is_overdue and 'border-left: 4px solid #dc3545' or (state == 'done' and 'border-left: 4px solid #28a745' or 'border-left: 4px solid #adb5bd')">
+                            <strong><field name="name"/></strong>
+                            <div class="small text-muted"><field name="company_id"/></div>
+                            <div class="d-flex justify-content-between mt-1 small">
+                                <span><field name="date_deadline"/></span>
+                                <span t-if="is_overdue" class="text-danger fw-bold">Overdue</span>
+                            </div>
+                            <div class="mt-1">
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         KALENDER — belastning över tid. Den vy som gör planen meningsfull:
+         en plan utan kalender är bara en lista med intervall.
+         ================================================================ -->
+    <record id="view_liquidity_work_order_calendar" model="ir.ui.view">
+        <field name="name">liquidity.work.order.calendar</field>
+        <field name="model">liquidity.work.order</field>
+        <field name="arch" type="xml">
+            <calendar string="Work load"
+                      date_start="date_deadline"
+                      date_stop="date_deadline"
+                      all_day="is_all_day"
+                      color="state"
+                      mode="month"
+                      create="false"
+                      quick_create="false">
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="user_id" filters="1" avatar_field="avatar_128"/>
+                <field name="state"/>
+                <field name="is_all_day"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         FORM — där arbetet faktiskt utförs. HTML renderas här.
+         ================================================================ -->
+    <record id="view_liquidity_work_order_form" model="ir.ui.view">
+        <field name="name">liquidity.work.order.form</field>
+        <field name="model">liquidity.work.order</field>
+        <field name="arch" type="xml">
+            <form string="Work order">
+                <header>
+                    <button name="action_start" type="object" string="Start"
+                            class="btn-primary" invisible="state != 'planned'"/>
+                    <button name="action_done" type="object" string="Done"
+                            class="btn-primary" invisible="state not in ('planned', 'in_progress')"/>
+                    <button name="action_skip" type="object" string="Skip"
+                            invisible="state in ('done', 'skipped')"/>
+                    <button name="action_reset" type="object" string="Reset"
+                            invisible="state == 'planned'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="planned,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Work">
+                            <field name="company_id"/>
+                            <field name="period_start"/>
+                            <field name="date_deadline"/>
+                            <field name="is_overdue" invisible="not is_overdue"/>
+                        </group>
+                        <group string="Responsibility">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="responsible_role"/>
+                            <field name="estimated_minutes"/>
+                            <field name="minutes_spent"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Instructions" name="instructions">
+                            <field name="description" widget="html" readonly="1"/>
+                        </page>
+                        <page string="Time" name="time">
+                            <field name="timesheet_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="minutes" sum="Total"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Source" name="source">
+                            <group>
+                                <field name="plan_id" readonly="1"/>
+                                <field name="plan_line_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_work_order_search" model="ir.ui.view">
+        <field name="name">liquidity.work.order.search</field>
+        <field name="model">liquidity.work.order</field>
+        <field name="arch" type="xml">
+            <search string="Work orders">
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="user_id"/>
+                <filter name="open" string="Open"
+                        domain="[('state', 'in', ['planned', 'in_progress'])]"/>
+                <filter name="overdue" string="Overdue"
+                        domain="[('is_overdue', '=', True)]"/>
+                <separator/>
+                <filter name="mine" string="Assigned to me"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter name="unassigned" string="Unassigned"
+                        domain="[('user_id', '=', False)]"/>
+                <separator/>
+                <filter name="my_activities" string="My activities"
+                        domain="[('activity_ids.user_id', '=', uid)]"/>
+                <group expand="0" string="Group by">
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_company" string="Bookkeeping"
+                            context="{'group_by': 'company_id'}"/>
+                    <filter name="group_user" string="Assigned to"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_deadline" string="Due"
+                            context="{'group_by': 'date_deadline:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_liquidity_work_order" model="ir.actions.act_window">
+        <field name="name">Work orders</field>
+        <field name="res_model">liquidity.work.order</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_liquidity_work_order_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No work orders yet</p>
+            <p>Work orders are generated nightly from the plans. Sell a product
+               that creates a work plan, and they appear as their periods
+               approach.</p>
+        </field>
+    </record>
+
+</odoo>

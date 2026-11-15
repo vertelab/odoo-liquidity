@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Fälten syns bara för tjänsteprodukter: en vara genererar ingen
+         åtgärdsplan, och en flik som alltid är tom är brus. -->
+    <record id="product_template_form_view_liquidity_work" model="ir.ui.view">
+        <field name="name">product.template.form.liquidity.work</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Work Plan" name="liquidity_work"
+                      invisible="type != 'service'">
+                    <group>
+                        <group string="On sale">
+                            <field name="liquidity_tracking"/>
+                            <field name="liquidity_template_id"
+                                   invisible="liquidity_tracking == 'no'"
+                                   required="liquidity_tracking == 'work_plan'"/>
+                        </group>
+                    </group>
+                    <div class="text-muted" invisible="liquidity_tracking == 'no'">
+                        <p>
+                            Confirming an order with this product creates a plan
+                            for the customer's bookkeeping, copied from the
+                            template. The work orders are then generated nightly
+                            as their periods approach.
+                        </p>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

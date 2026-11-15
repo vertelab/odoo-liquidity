@@ -191,3 +191,61 @@ checkmodule -d <db> -m liquidity_portfolio -t -l test --test-tags /liquidity_por
 Work orders, customer-initiated requests, mirrored chat, SSO/impersonation and
 Fortnox/Visma drivers are separate changes. See
 `openspec/changes/portfolio-steg2-*` in the planning repository.
+
+### `liquidity_work` — work orders from a product's plan (step 2, landed)
+
+Step 1 answers *which client needs me today*. This module answers *what do we do
+about it* — and makes the answer visible.
+
+**The flow is the one Odoo already uses for services:**
+
+```
+product.template.liquidity_tracking = 'work_plan'
+product.template.liquidity_template_id -> liquidity.work.template
+
+sale order confirmed -> a plan is created (a copy of the template)
+nightly cron         -> work orders are created from the plan's lines
+```
+
+**Why a copy and not a reference.** The template is a record and the plan is its
+own record with its own lines. Editing the template afterwards never changes a
+plan already sold — the customer bought the plan as it was, not as it later
+became.
+
+**Why cron and not confirmation.** A plan running for a year cannot create
+twelve work orders at once: they would sit in the calendar and nobody would know
+which were current. The plan exists the moment the order is confirmed, so the
+seller sees the effect of what they sold; the orders appear as their periods
+approach.
+
+**The one rule that must hold.** Cron runs every night. If it created a work
+order per night the calendar would be useless within a week. The guard is a
+unique constraint on `(plan_id, plan_line_id, period_start)` — stronger than
+trusting the code to always check first.
+
+**Missed periods are never skipped.** A period that passed without being ticked
+off stays visible as overdue. Skipping it silently would hide that the work was
+not done.
+
+**Four views.** List (what is left), kanban (the flow), calendar (load over
+time), form (where the work is done). The calendar is what makes a plan
+meaningful: a plan without a calendar is just a list of intervals.
+
+**HTML descriptions, with the consequence handled.** A description is rich text
+because "reconcile the bank" often needs a checklist or a link. But HTML in a
+list view shows `<ul><li>` to the user, so the list shows
+`description_excerpt` — plain text, truncated.
+
+**Time reporting is underlying data, not invoicing.** No product, no price, no
+invoice link. Turning it into billing is a separate decision.
+
+Tests:
+
+```bash
+checkmodule -d <db> -m liquidity_work -t -l test --test-tags /liquidity_work
+```
+
+#### Not in this module
+
+Customer-initiated requests, chat mirroring and Fortnox/Visma drivers are
+separate changes (`portfolio-steg2-kundbrygga`, `portfolio-steg2-externa-drivers`).
