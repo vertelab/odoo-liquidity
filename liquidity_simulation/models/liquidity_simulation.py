@@ -144,6 +144,9 @@ class LiquiditySimulation(models.Model):
     disclaimer = fields.Char(
         string="Disclaimer",
         compute="_compute_disclaimer",
+        help="The responsible-use sentence. Rendered in the form as text, "
+             "not as a tooltip: a probability band invites a decision, and "
+             "the sentence that limits it has to be read.",
     )
 
     state = fields.Selection(

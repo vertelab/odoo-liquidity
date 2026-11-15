@@ -18,9 +18,104 @@
                     <span class="o_liquidity_band_legend_item o_liquidity_band_legend_baseline">
                         Deterministic forecast
                     </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_event">
+                        Tax / payroll / loan
+                    </span>
                 </div>
-                <svg t-ref="svg" class="o_liquidity_band_svg" role="img"
-                     aria-label="Probability band around the liquidity forecast"/>
+
+                <svg class="o_liquidity_band_svg" role="img"
+                     t-att-viewBox="'0 0 ' + geometry.width + ' ' + geometry.height"
+                     t-att-height="geometry.height"
+                     aria-label="Probability band around the liquidity forecast">
+
+                    <!-- Below zero, shaded, so a breach is visible without
+                         reading a number. -->
+                    <rect t-if="geometry.negativeHeight > 0"
+                          x="72" t-att-y="geometry.zeroY"
+                          t-att-width="geometry.innerW"
+                          t-att-height="geometry.negativeHeight"
+                          class="o_liquidity_band_negative"/>
+
+                    <path t-att-d="geometry.bandPath" class="o_liquidity_band_area"/>
+                    <path t-att-d="geometry.medianPath" class="o_liquidity_band_median"/>
+                    <path t-if="geometry.baselinePath"
+                          t-att-d="geometry.baselinePath"
+                          class="o_liquidity_band_baseline"/>
+
+                    <line x1="72" t-att-x2="72 + geometry.innerW"
+                          t-att-y1="geometry.zeroY" t-att-y2="geometry.zeroY"
+                          class="o_liquidity_band_zero"/>
+                    <text x="64" t-att-y="geometry.zeroY + 4"
+                          class="o_liquidity_band_axis" text-anchor="end">0</text>
+
+                    <!-- Event markers: a dip in the band gets a visible cause. -->
+                    <g t-foreach="geometry.events" t-as="event" t-key="event.key">
+                        <line t-att-x1="event.x" t-att-x2="event.x"
+                              y1="24" t-att-y2="24 + geometry.innerH"
+                              class="o_liquidity_band_event"/>
+                        <text t-att-x="event.x + 3" y="36"
+                              class="o_liquidity_band_event_label"
+                              t-esc="event.label"/>
+                    </g>
+
+                    <!-- Click target per day. Transparent, full height, so the
+                         whole column is clickable and not just the 1px line. -->
+                    <g t-foreach="geometry.hitAreas" t-as="hit" t-key="hit.key">
+                        <rect t-att-x="hit.x" y="24"
+                              t-att-width="hit.width"
+                              t-att-height="geometry.innerH"
+                              t-att-class="'o_liquidity_band_hit' + (state.selectedDate === hit.date ? ' o_liquidity_band_hit_selected' : '')"
+                              t-on-click="() => this.onDayClick(hit.date)">
+                            <title t-esc="hit.date"/>
+                        </rect>
+                    </g>
+
+                    <text x="72" t-att-y="geometry.height - 10"
+                          class="o_liquidity_band_axis" t-esc="geometry.firstDate"/>
+                    <text t-att-x="72 + geometry.innerW" t-att-y="geometry.height - 10"
+                          class="o_liquidity_band_axis" text-anchor="end"
+                          t-esc="geometry.lastDate"/>
+                </svg>
+
+                <!-- Drill-down: what happened on the clicked day, and what
+                     drives the uncertainty overall. -->
+                <div t-if="selectedLine" class="o_liquidity_band_detail">
+                    <div class="o_liquidity_band_detail_header">
+                        <strong t-esc="selectedLine.date"/>
+                        <button type="button" class="btn btn-link btn-sm"
+                                t-on-click="() => this.onDayClick(selectedLine.date)">
+                            Close
+                        </button>
+                    </div>
+                    <dl class="o_liquidity_band_detail_grid">
+                        <dt>P10</dt>
+                        <dd t-esc="selectedLine.p10"/>
+                        <dt>P50</dt>
+                        <dd t-esc="selectedLine.p50"/>
+                        <dt>P90</dt>
+                        <dd t-esc="selectedLine.p90"/>
+                        <dt>Baseline</dt>
+                        <dd t-esc="selectedLine.baseline_balance or '—'"/>
+                        <dt>P(negative)</dt>
+                        <dd t-esc="formatPercent(selectedLine.p_negative)"/>
+                        <dt>Events</dt>
+                        <dd t-esc="selectedLine.expected_events or '—'"/>
+                    </dl>
+                    <div t-if="selectedContributions.length" class="o_liquidity_band_detail_drivers">
+                        <p class="o_liquidity_band_detail_caption">
+                            What drives the uncertainty in this simulation:
+                        </p>
+                        <ul>
+                            <li t-foreach="selectedContributions" t-as="contribution"
+                                t-key="contribution.id">
+                                <span t-esc="contribution.label"/>
+                                <span class="o_liquidity_band_detail_share"
+                                      t-esc="formatPercent(contribution.variance_share)"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
                 <p class="o_liquidity_band_note">
                     The band shows historical payment behaviour, not a
                     guarantee about the future. The median is a midline, not a

@@ -26,9 +26,20 @@
                            not a measurement.</p>
                         <field name="sample_warnings" nolabel="1" readonly="1"/>
                     </div>
+                    <!-- Responsible use, in the view and not only in a
+                         tooltip: a probability band invites a decision, and
+                         the sentence that limits it must be read, not hovered
+                         over. -->
                     <div class="alert alert-info" role="alert"
                          invisible="state != 'computed'">
-                        <field name="disclaimer" nolabel="1" readonly="1"/>
+                        <p><strong>How to read this.</strong>
+                           The band shows historical payment behaviour, not a
+                           guarantee about the future. The median is a midline,
+                           not a promise — the figure to lean on in a credit
+                           decision is the worst 5 %.</p>
+                        <p class="mb-0">
+                           A dash in place of a probability means there is no
+                           simulation yet, which is not the same as zero risk.</p>
                     </div>
                     <group>
                         <group>

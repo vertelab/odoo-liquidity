@@ -30,6 +30,12 @@
             height: 0;
             border-top: 1px dotted #6c757d;
         }
+
+        .o_liquidity_band_legend_event::before {
+            height: 10px;
+            width: 0;
+            border-left: 1px dashed #ffc107;
+        }
     }
 
     .o_liquidity_band_svg {
@@ -79,6 +85,72 @@
     .o_liquidity_band_axis {
         font-size: 11px;
         fill: #6c757d;
+    }
+
+    .o_liquidity_band_hit {
+        fill: transparent;
+        cursor: pointer;
+
+        &:hover {
+            fill: rgba(0, 123, 255, 0.07);
+        }
+    }
+
+    .o_liquidity_band_hit_selected {
+        fill: rgba(0, 123, 255, 0.14);
+    }
+
+    .o_liquidity_band_detail {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background: #f8f9fa;
+        font-size: 0.85rem;
+
+        .o_liquidity_band_detail_header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .o_liquidity_band_detail_grid {
+            display: grid;
+            grid-template-columns: max-content 1fr max-content 1fr;
+            gap: 2px 12px;
+            margin: 0;
+
+            dt {
+                font-weight: normal;
+                color: #6c757d;
+            }
+
+            dd {
+                margin: 0;
+                font-variant-numeric: tabular-nums;
+            }
+        }
+
+        .o_liquidity_band_detail_drivers {
+            margin-top: 8px;
+
+            .o_liquidity_band_detail_caption {
+                margin: 0 0 4px;
+                color: #6c757d;
+            }
+
+            ul {
+                margin: 0;
+                padding-left: 18px;
+            }
+
+            .o_liquidity_band_detail_share {
+                margin-left: 8px;
+                color: #6c757d;
+                font-variant-numeric: tabular-nums;
+            }
+        }
     }
 
     .o_liquidity_band_note {
