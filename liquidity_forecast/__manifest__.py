@@ -41,6 +41,13 @@ never reports ``computed`` on an invented zero.""",
         "views/liquidity_forecast_views.xml",
         "views/menus.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "liquidity_forecast/static/src/components/forecast_curve.js",
+            "liquidity_forecast/static/src/components/forecast_curve.xml",
+            "liquidity_forecast/static/src/scss/forecast_curve.scss",
+        ],
+    },
     "installable": True,
     "application": False,
     "auto_install": False,

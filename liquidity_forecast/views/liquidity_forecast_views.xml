@@ -66,6 +66,13 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Curve" name="curve">
+                            <!-- The zero line and the shaded area below it.
+                                 Odoo's graph view draws the line but has no
+                                 hook for either, so this is a component. -->
+                            <field name="forecast_line_ids" nolabel="1" readonly="1"
+                                   widget="liquidity_forecast_curve"/>
+                        </page>
                         <page string="Daily Curve" name="daily_curve">
                             <field name="forecast_line_ids" nolabel="1" readonly="1">
                                 <list string="Daily Lines"

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="liquidity_forecast.ForecastCurve">
+        <div class="o_liquidity_curve">
+            <t t-if="!hasCurve">
+                <!-- Nothing to draw. An empty frame would look like a result. -->
+            </t>
+            <t t-else="">
+                <div class="o_liquidity_curve_legend">
+                    <span class="o_liquidity_curve_legend_item o_liquidity_curve_legend_line">
+                        Closing balance
+                    </span>
+                    <span class="o_liquidity_curve_legend_item o_liquidity_curve_legend_zero">
+                        Zero
+                    </span>
+                    <span class="o_liquidity_curve_legend_item o_liquidity_curve_legend_negative">
+                        Below zero
+                    </span>
+                </div>
+
+                <svg class="o_liquidity_curve_svg" role="img"
+                     t-att-viewBox="'0 0 ' + geometry.width + ' ' + geometry.height"
+                     t-att-height="geometry.height"
+                     aria-label="Liquidity forecast closing balance per day">
+                    <title>Closing balance per day. The area below zero is
+                        shaded: those are the days the company cannot pay.</title>
+
+                    <rect t-if="geometry.negativeHeight > 0"
+                          x="72" t-att-y="geometry.zeroY"
+                          t-att-width="geometry.innerW"
+                          t-att-height="geometry.negativeHeight"
+                          class="o_liquidity_curve_negative"/>
+
+                    <path t-att-d="geometry.curvePath" class="o_liquidity_curve_line"/>
+
+                    <!-- The zero line is drawn last so it sits on top of the
+                         curve: where they cross is the answer. -->
+                    <line x1="72" t-att-x2="72 + geometry.innerW"
+                          t-att-y1="geometry.zeroY" t-att-y2="geometry.zeroY"
+                          class="o_liquidity_curve_zero"/>
+                    <text x="64" t-att-y="geometry.zeroY + 4"
+                          class="o_liquidity_curve_axis" text-anchor="end">0</text>
+
+                    <g t-foreach="geometry.events" t-as="event" t-key="event.key">
+                        <line t-att-x1="event.x" t-att-x2="event.x"
+                              y1="24" t-att-y2="24 + geometry.innerH"
+                              class="o_liquidity_curve_event"/>
+                        <text t-att-x="event.x + 3" y="36"
+                              class="o_liquidity_curve_event_label"
+                              t-esc="event.label"/>
+                    </g>
+
+                    <g t-foreach="geometry.hitAreas" t-as="hit" t-key="hit.key">
+                        <rect t-att-x="hit.x" y="24"
+                              t-att-width="hit.width"
+                              t-att-height="geometry.innerH"
+                              t-att-class="'o_liquidity_curve_hit' + (state.selectedDate === hit.date ? ' o_liquidity_curve_hit_selected' : '')"
+                              t-on-click="() => this.onDayClick(hit.date)">
+                            <title t-esc="hit.date"/>
+                        </rect>
+                    </g>
+
+                    <text x="72" t-att-y="geometry.height - 10"
+                          class="o_liquidity_curve_axis" t-esc="geometry.firstDate"/>
+                    <text t-att-x="72 + geometry.innerW" t-att-y="geometry.height - 10"
+                          class="o_liquidity_curve_axis" text-anchor="end"
+                          t-esc="geometry.lastDate"/>
+                </svg>
+
+                <!-- The negative days stated in words, not only in colour. -->
+                <p t-if="geometry.negativeDays.length" class="o_liquidity_curve_warning">
+                    <t t-esc="geometry.negativeDays.length"/> day(s) below zero,
+                    first on <t t-esc="geometry.negativeDays[0].date"/>.
+                </p>
+
+                <div t-if="selectedLine" class="o_liquidity_curve_detail">
+                    <div class="o_liquidity_curve_detail_header">
+                        <strong t-esc="selectedLine.date"/>
+                        <button type="button" class="btn btn-link btn-sm"
+                                t-on-click="() => this.onDayClick(selectedLine.date)">
+                            Close
+                        </button>
+                    </div>
+                    <dl class="o_liquidity_curve_detail_grid">
+                        <dt>Opening</dt>
+                        <dd t-esc="selectedLine.opening_balance"/>
+                        <dt>Incoming</dt>
+                        <dd t-esc="selectedLine.incoming"/>
+                        <dt>Outgoing</dt>
+                        <dd t-esc="selectedLine.outgoing"/>
+                        <dt>Closing</dt>
+                        <dd t-esc="selectedLine.closing_balance"/>
+                        <dt>Event</dt>
+                        <dd t-esc="selectedLine.event_type or '—'"/>
+                    </dl>
+                </div>
+
+                <p class="o_liquidity_curve_note">
+                    One deterministic line: what is open today, settling when it
+                    says it will. It is not a probability.
+                </p>
+            </t>
+        </div>
+    </t>
+
+</templates>
