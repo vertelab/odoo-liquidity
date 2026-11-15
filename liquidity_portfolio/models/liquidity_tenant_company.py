@@ -2,7 +2,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 
 from ..services import kpi_reader, rpc_client
 
@@ -224,11 +224,18 @@ class LiquidityTenantCompany(models.Model):
             # Integer has no empty state in Odoo: False reads back as 0. The
             # view therefore keys on crisis_kind, never on days_to_crisis alone.
             row.days_to_crisis = data.get("days_to_crisis") if has_figures else 0
-            row.crisis_kind = data.get("crisis_kind", "unknown") if has_figures else "unknown"
-            row.lowest_balance = data.get("lowest_balance") if has_figures else False
-            row.lowest_balance_date = data.get("lowest_balance_date") if has_figures else False
-            row.opening_balance = data.get("opening_balance") if has_figures else False
-            row.computed_at = data.get("computed_at") if has_figures else False
+            if has_figures:
+                row.crisis_kind = data.get("crisis_kind", "unknown")
+                row.lowest_balance = data.get("lowest_balance")
+                row.lowest_balance_date = data.get("lowest_balance_date")
+                row.opening_balance = data.get("opening_balance")
+                row.computed_at = data.get("computed_at")
+            else:
+                row.crisis_kind = "unknown"
+                row.lowest_balance = False
+                row.lowest_balance_date = False
+                row.opening_balance = False
+                row.computed_at = False
 
     @api.model
     def _read_tenant(self, tenant, rows):

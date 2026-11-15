@@ -223,7 +223,9 @@ class LiquidityTenant(models.Model):
             company_ref = row["id"]
             seen_refs.add(company_ref)
             currency = row.get("currency_id")
-            currency_name = currency[1] if isinstance(currency, (list, tuple)) else False
+            currency_name = (
+                currency[1] if isinstance(currency, (list, tuple)) else False
+            )
 
             # active_test=False is essential: the unique constraint covers
             # archived rows too. A hidden company that search() cannot see

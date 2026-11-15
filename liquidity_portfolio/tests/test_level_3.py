@@ -53,7 +53,7 @@ class TestLevel3(TransactionCase):
                  "has_event": False, "event_type": False},
             ],
         )
-        with connect, latest as latest_mock, lines as lines_mock:
+        with connect, latest, lines as lines_mock:
             data = self.row.action_load_curve()
 
         self.assertEqual(data["status"], "ok")

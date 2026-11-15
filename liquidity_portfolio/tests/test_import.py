@@ -71,7 +71,8 @@ class TestImport(TransactionCase):
         ))
         row = self.tenant.company_ids
         self._import(_companies(
-            {"id": 1, "name": "Alfa Holding AB", "currency_id": [1, "SEK"], "active": True},
+            {"id": 1, "name": "Alfa Holding AB",
+             "currency_id": [1, "SEK"], "active": True},
         ))
         self.assertEqual(len(self.tenant.company_ids), 1)
         self.assertEqual(self.tenant.company_ids, row)
