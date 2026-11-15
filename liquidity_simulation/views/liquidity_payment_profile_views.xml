@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_payment_profile_list" model="ir.ui.view">
+        <field name="name">liquidity.payment.profile.list</field>
+        <field name="model">liquidity.payment.profile</field>
+        <field name="arch" type="xml">
+            <list string="Payment Profiles"
+                  decoration-danger="confidence == 'low'"
+                  decoration-warning="confidence == 'medium'">
+                <field name="partner_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="direction"/>
+                <field name="sample_size"/>
+                <field name="mean_delay_days"/>
+                <field name="stdev_delay_days"/>
+                <field name="p_default"/>
+                <field name="distribution"/>
+                <field name="confidence" widget="badge"
+                       decoration-success="confidence == 'high'"
+                       decoration-warning="confidence == 'medium'"
+                       decoration-danger="confidence == 'low'"/>
+                <field name="last_refresh" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_liquidity_payment_profile_form" model="ir.ui.view">
+        <field name="name">liquidity.payment.profile.form</field>
+        <field name="model">liquidity.payment.profile</field>
+        <field name="arch" type="xml">
+            <form string="Payment Profile">
+                <header>
+                    <button name="action_refresh" type="object"
+                            string="Rebuild from history" class="btn-primary"
+                            help="Recompute mean, spread and default probability from this partner's reconciled payments."/>
+                </header>
+                <sheet>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="confidence != 'low'">
+                        <p><strong>Thin data.</strong>
+                           This profile rests on
+                           <field name="sample_size" class="oe_inline" readonly="1"/>
+                           payments. The simulation uses a conservative
+                           industry default instead, and the band will be wide
+                           because of it — not because the simulation is
+                           unstable.</p>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="direction"/>
+                            <field name="active" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="distribution"/>
+                            <field name="confidence" widget="badge"
+                                   decoration-success="confidence == 'high'"
+                                   decoration-warning="confidence == 'medium'"
+                                   decoration-danger="confidence == 'low'"/>
+                            <field name="last_refresh"/>
+                        </group>
+                    </group>
+                    <group string="The evidence">
+                        <group>
+                            <field name="sample_size"/>
+                            <field name="mean_delay_days"/>
+                            <field name="stdev_delay_days"/>
+                        </group>
+                        <group>
+                            <field name="outlier_cap_days"/>
+                            <field name="p_default"/>
+                            <field name="default_age_days"/>
+                            <field name="risk_score"/>
+                        </group>
+                    </group>
+                    <group string="Observed delays (days between due date and payment)">
+                        <field name="observations" nolabel="1" readonly="1"
+                               placeholder="No reconciled payments yet — the profile falls back to the industry default."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_payment_profile_search" model="ir.ui.view">
+        <field name="name">liquidity.payment.profile.search</field>
+        <field name="model">liquidity.payment.profile</field>
+        <field name="arch" type="xml">
+            <search string="Payment Profiles">
+                <field name="partner_id"/>
+                <filter name="low_confidence" string="Thin data"
+                        domain="[('confidence', '=', 'low')]"/>
+                <filter name="receivable" string="Customers"
+                        domain="[('direction', '=', 'receivable')]"/>
+                <filter name="payable" string="Vendors"
+                        domain="[('direction', '=', 'payable')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_confidence" string="Confidence"
+                            context="{'group_by': 'confidence'}"/>
+                    <filter name="group_direction" string="Direction"
+                            context="{'group_by': 'direction'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_liquidity_payment_profile" model="ir.actions.act_window">
+        <field name="name">Payment Profiles</field>
+        <field name="res_model">liquidity.payment.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

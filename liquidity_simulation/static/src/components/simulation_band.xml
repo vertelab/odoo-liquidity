@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="liquidity_simulation.SimulationBand">
+        <div class="o_liquidity_band">
+            <t t-if="!hasBand">
+                <!-- Nothing to draw. An empty frame would look like a result,
+                     so the component renders nothing at all. -->
+            </t>
+            <t t-else="">
+                <div class="o_liquidity_band_legend">
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_area">
+                        P10–P90
+                    </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_median">
+                        P50 (median)
+                    </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_baseline">
+                        Deterministic forecast
+                    </span>
+                </div>
+                <svg t-ref="svg" class="o_liquidity_band_svg" role="img"
+                     aria-label="Probability band around the liquidity forecast"/>
+                <p class="o_liquidity_band_note">
+                    The band shows historical payment behaviour, not a
+                    guarantee about the future. The median is a midline, not a
+                    promise — the figure to lean on in a credit decision is
+                    the worst 5 %.
+                </p>
+            </t>
+        </div>
+    </t>
+
+</templates>

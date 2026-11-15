@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_liquidity_simulation"
+              name="Simulation"
+              parent="liquidity_forecast.menu_liquidity_root"
+              action="action_liquidity_simulation"
+              sequence="20"/>
+
+    <menuitem id="menu_liquidity_payment_profile"
+              name="Payment Profiles"
+              parent="liquidity_forecast.menu_liquidity_root"
+              action="action_liquidity_payment_profile"
+              sequence="30"/>
+
+</odoo>

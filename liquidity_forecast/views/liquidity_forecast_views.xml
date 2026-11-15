@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_forecast_form" model="ir.ui.view">
+        <field name="name">liquidity.forecast.form</field>
+        <field name="model">liquidity.forecast</field>
+        <field name="arch" type="xml">
+            <form string="Liquidity Forecast">
+                <header>
+                    <button name="action_compute" type="object"
+                            string="Compute" class="btn-primary"
+                            help="Recompute the forecast from open receivables and payables."/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,computed,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_liquidity_forecast_line)d" type="action"
+                                class="oe_stat_button" icon="fa-calendar"
+                                context="{'search_default_forecast_id': id}">
+                            <field name="line_count" string="Days" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'draft'">
+                        <field name="state_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'error'">
+                        <field name="state_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="journal_id"/>
+                            <field name="date_from"/>
+                            <field name="horizon_days"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="opening_balance"/>
+                            <field name="opening_balance_manual" invisible="1"/>
+                            <button name="action_set_manual_opening_balance"
+                                    type="object" string="Keep this balance"
+                                    class="btn-link"
+                                    invisible="opening_balance_manual or not opening_balance"
+                                    help="Stop the forecast from overwriting this
+                                          value with the automatic bank-account
+                                          total on the next run."/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="computed_at"/>
+                        </group>
+                    </group>
+                    <group string="Risk">
+                        <group>
+                            <field name="risk_level" widget="badge"
+                                   decoration-success="risk_level == 'good'"
+                                   decoration-warning="risk_level == 'warning'"
+                                   decoration-danger="risk_level == 'danger'"/>
+                            <field name="days_to_crisis"/>
+                        </group>
+                        <group>
+                            <field name="lowest_balance"/>
+                            <field name="lowest_balance_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Daily Curve" name="daily_curve">
+                            <field name="forecast_line_ids" nolabel="1" readonly="1">
+                                <list string="Daily Lines"
+                                      decoration-danger="closing_balance &lt; 0"
+                                      decoration-warning="closing_balance == 0">
+                                    <field name="date"/>
+                                    <field name="opening_balance" sum="Total"/>
+                                    <field name="incoming" sum="Total"/>
+                                    <field name="outgoing" sum="Total"/>
+                                    <field name="closing_balance" sum="Total"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_forecast_list" model="ir.ui.view">
+        <field name="name">liquidity.forecast.list</field>
+        <field name="model">liquidity.forecast</field>
+        <field name="arch" type="xml">
+            <list string="Liquidity Forecasts"
+                  decoration-danger="risk_level == 'danger'"
+                  decoration-warning="risk_level == 'warning'">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="opening_balance"/>
+                <field name="lowest_balance"/>
+                <field name="lowest_balance_date"/>
+                <field name="days_to_crisis"/>
+                <field name="risk_level" widget="badge"
+                       decoration-success="risk_level == 'good'"
+                       decoration-warning="risk_level == 'warning'"
+                       decoration-danger="risk_level == 'danger'"/>
+                <field name="state" widget="badge"/>
+                <field name="computed_at"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_liquidity_forecast_graph" model="ir.ui.view">
+        <field name="name">liquidity.forecast.line.graph</field>
+        <field name="model">liquidity.forecast.line</field>
+        <field name="arch" type="xml">
+            <graph string="Liquidity Curve" type="line" sample="1">
+                <field name="date" interval="day"/>
+                <field name="closing_balance" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_liquidity_forecast" model="ir.actions.act_window">
+        <field name="name">Liquidity Forecast</field>
+        <field name="res_model">liquidity.forecast</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

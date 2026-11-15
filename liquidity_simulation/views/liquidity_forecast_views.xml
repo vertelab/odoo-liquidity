@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_forecast_form_simulation" model="ir.ui.view">
+        <field name="name">liquidity.forecast.form.simulation</field>
+        <field name="model">liquidity.forecast</field>
+        <field name="inherit_id" ref="liquidity_forecast.view_liquidity_forecast_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                The deterministic Risk group stays exactly as it is. The
+                probability reading is added beside it, never in place of it:
+                the two answer different questions, and a view that shows
+                only one of them is either misleading about the certainty or
+                impossible to read without statistics.
+            -->
+            <xpath expr="//field[@name='lowest_balance_date']" position="after">
+                <group string="Probability (Monte Carlo)"
+                       invisible="not latest_simulation_id">
+                    <group>
+                        <field name="simulation_p_crisis_display"/>
+                        <field name="effective_risk_level" widget="badge"
+                               decoration-success="effective_risk_level == 'good'"
+                               decoration-warning="effective_risk_level == 'warning'"
+                               decoration-danger="effective_risk_level == 'danger'"/>
+                    </group>
+                    <group>
+                        <field name="latest_simulation_id"/>
+                        <field name="simulation_is_stale"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- No simulation yet: explain, do not render an empty band. -->
+            <xpath expr="//field[@name='lowest_balance_date']" position="after">
+                <div class="alert alert-info" role="alert"
+                     name="simulation_missing_alert"
+                     invisible="latest_simulation_id">
+                    No simulation has been computed for this forecast yet. The
+                    nightly job adds a probability band once a forecast with an
+                    opening balance exists.
+                </div>
+            </xpath>
+
+            <!-- Stale band: say so in the view, never show an undated old band. -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="after">
+                <div class="alert alert-warning" role="alert"
+                     name="simulation_stale_alert"
+                     invisible="not simulation_is_stale">
+                    The forecast was recomputed after the latest simulation, so
+                    the band describes an older baseline. It will be refreshed
+                    by the next nightly run.
+                </div>
+            </xpath>
+
+            <!-- Opening balance missing: no band at all, and a reason. -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="after">
+                <div class="alert alert-warning" role="alert"
+                     name="simulation_no_balance_alert"
+                     invisible="opening_balance or latest_simulation_id">
+                    No probability band can be drawn without an opening
+                    balance. Connect a bank account or enter the cash position
+                    manually — a band that starts from zero would look computed
+                    but would not be.
+                </div>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="%(action_liquidity_simulation)d" type="action"
+                        class="oe_stat_button" icon="fa-area-chart"
+                        invisible="not latest_simulation_id"
+                        context="{'search_default_forecast_id': id}">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Simulation</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Simulation" invisible="not latest_simulation_id">
+                    <group>
+                        <group>
+                            <field name="latest_simulation_id" readonly="1"/>
+                            <field name="simulation_p_crisis_display" readonly="1"/>
+                            <field name="effective_risk_level" widget="badge"
+                                   readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="simulation_is_stale" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="simulation_ids" readonly="1">
+                        <list string="Simulations">
+                            <field name="name"/>
+                            <field name="p_crisis_90" widget="percentage"/>
+                            <field name="worst_case_p95"/>
+                            <field name="confidence" widget="badge"/>
+                            <field name="state" widget="badge"/>
+                            <field name="computed_at"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Scheduled through cron_tick, not ir.cron: the engine owns cadence,
+            deterministic spread (sha256 of technical_name), transactional
+            locking, per-task error isolation and run history in cron.task.log.
+
+            A task uses EITHER cadence OR interval_number/interval_type, never
+            both (cron_task.py:116).
+        -->
+        <record id="cron_task_liquidity_forecast_recompute" model="cron.task">
+            <field name="name">Liquidity: recompute forecast</field>
+            <field name="technical_name">liquidity_forecast_recompute</field>
+            <field name="module">liquidity_forecast</field>
+            <field name="model_name">liquidity.forecast</field>
+            <field name="method_name">_cron_recompute_all</field>
+            <field name="cadence">daily</field>
+            <field name="sequence">10</field>
+        </record>
+    </data>
+</odoo>

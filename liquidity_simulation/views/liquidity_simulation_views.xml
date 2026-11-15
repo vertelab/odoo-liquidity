@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_simulation_form" model="ir.ui.view">
+        <field name="name">liquidity.simulation.form</field>
+        <field name="model">liquidity.simulation</field>
+        <field name="arch" type="xml">
+            <form string="Liquidity Simulation">
+                <header>
+                    <button name="action_compute" type="object"
+                            string="Run simulation" class="btn-primary"
+                            help="Run the Monte Carlo simulation now. The nightly cron does this anyway; running it by hand is for testing."/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,computed,error"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'error'">
+                        <field name="state_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="confidence != 'low' or state != 'computed'">
+                        <p><strong>Low confidence.</strong>
+                           The band is wide because the payment history behind
+                           it is thin. Treat it as a range of possibilities,
+                           not a measurement.</p>
+                        <field name="sample_warnings" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="state != 'computed'">
+                        <field name="disclaimer" nolabel="1" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="forecast_id"/>
+                            <field name="date_from"/>
+                            <field name="horizon_days"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="iterations"/>
+                            <field name="seed"/>
+                            <field name="computed_at"/>
+                            <field name="duration_ms"/>
+                        </group>
+                    </group>
+                    <group string="Result">
+                        <group>
+                            <field name="p_crisis_90" widget="percentage"/>
+                            <field name="banner_level" widget="badge"
+                                   decoration-success="banner_level == 'good'"
+                                   decoration-warning="banner_level == 'warning'"
+                                   decoration-danger="banner_level == 'danger'"/>
+                            <field name="confidence" widget="badge"
+                                   decoration-success="confidence == 'high'"
+                                   decoration-warning="confidence == 'medium'"
+                                   decoration-danger="confidence == 'low'"/>
+                        </group>
+                        <group>
+                            <field name="worst_case_p95"/>
+                            <field name="lowest_p10"/>
+                            <field name="lowest_p10_date"/>
+                            <field name="lowest_p50"/>
+                            <field name="lowest_p90"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Band" name="band">
+                            <field name="line_count" invisible="1"/>
+                            <field name="line_ids" nolabel="1" readonly="1"
+                                   widget="liquidity_simulation_band"/>
+                        </page>
+                        <page string="Daily Percentiles" name="lines">
+                            <field name="line_ids" nolabel="1" readonly="1">
+                                <list string="Daily Percentiles"
+                                      decoration-danger="p10 &lt; 0"
+                                      decoration-warning="p50 &lt; 0">
+                                    <field name="date"/>
+                                    <field name="p10"/>
+                                    <field name="p50"/>
+                                    <field name="p90"/>
+                                    <field name="p95" optional="hide"/>
+                                    <field name="p99" optional="hide"/>
+                                    <field name="p_negative" widget="percentage"/>
+                                    <field name="baseline_balance"/>
+                                    <field name="expected_events" optional="show"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="What drives the uncertainty" name="variance">
+                            <field name="variance_contribution_ids" nolabel="1"
+                                   readonly="1">
+                                <list string="Variance Contributions">
+                                    <field name="label"/>
+                                    <field name="source_type"/>
+                                    <field name="partner_id"/>
+                                    <field name="variance_share" widget="percentage"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_simulation_list" model="ir.ui.view">
+        <field name="name">liquidity.simulation.list</field>
+        <field name="model">liquidity.simulation</field>
+        <field name="arch" type="xml">
+            <list string="Liquidity Simulations"
+                  decoration-danger="banner_level == 'danger'"
+                  decoration-warning="banner_level == 'warning'">
+                <field name="name"/>
+                <field name="forecast_id"/>
+                <field name="date_from"/>
+                <field name="horizon_days"/>
+                <field name="p_crisis_90" widget="percentage"/>
+                <field name="worst_case_p95"/>
+                <field name="lowest_p10"/>
+                <field name="confidence" widget="badge"
+                       decoration-success="confidence == 'high'"
+                       decoration-warning="confidence == 'medium'"
+                       decoration-danger="confidence == 'low'"/>
+                <field name="state" widget="badge"/>
+                <field name="computed_at"/>
+                <field name="duration_ms" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_liquidity_simulation" model="ir.actions.act_window">
+        <field name="name">Simulations</field>
+        <field name="res_model">liquidity.simulation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

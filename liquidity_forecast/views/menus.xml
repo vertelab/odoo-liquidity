@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_liquidity_root"
+              name="Liquidity"
+              parent="account.menu_finance_entries"
+              sequence="95"
+              groups="account.group_account_invoice"/>
+
+    <menuitem id="menu_liquidity_forecast"
+              name="Forecast"
+              parent="menu_liquidity_root"
+              action="action_liquidity_forecast"
+              sequence="10"/>
+
+</odoo>
