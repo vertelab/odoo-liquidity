@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Unmatched is a visible state, not a failure: an event the firm cannot
+         place is one a human has to look at, and silencing it would look
+         exactly like the customer never writing. -->
+    <record id="view_liquidity_incoming_event_list" model="ir.ui.view">
+        <field name="name">liquidity.incoming.event.list</field>
+        <field name="model">liquidity.incoming.event</field>
+        <field name="arch" type="xml">
+            <list string="From customers" create="false" delete="false"
+                  decoration-warning="state == 'unmatched'"
+                  decoration-muted="state == 'ignored'">
+                <field name="received_at"/>
+                <field name="tenant_id"/>
+                <field name="tenant_company_id"/>
+                <field name="summary"/>
+                <field name="event_type"/>
+                <field name="sent_by"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'matched'"
+                       decoration-warning="state == 'unmatched'"
+                       decoration-muted="state == 'ignored'"/>
+                <field name="match_note" optional="show"/>
+                <field name="res_reference" optional="hide"/>
+                <field name="sent_at" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_liquidity_incoming_event_form" model="ir.ui.view">
+        <field name="name">liquidity.incoming.event.form</field>
+        <field name="model">liquidity.incoming.event</field>
+        <field name="arch" type="xml">
+            <form string="From a customer" create="false" delete="false">
+                <header>
+                    <button name="action_rematch" type="object"
+                            string="Try matching again" class="btn-secondary"
+                            invisible="state != 'unmatched'"
+                            help="Use after importing the missing company."/>
+                    <button name="action_ignore" type="object"
+                            string="Ignore" class="btn-secondary"
+                            invisible="state == 'ignored'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="unmatched,matched"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'unmatched'">
+                        <field name="match_note" readonly="1" nolabel="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="summary"/>
+                            <field name="tenant_id"/>
+                            <field name="tenant_company_id"/>
+                            <field name="res_reference"/>
+                        </group>
+                        <group>
+                            <field name="uuid" readonly="1"/>
+                            <field name="event_type"/>
+                            <field name="sent_by"/>
+                            <field name="sent_at"/>
+                            <field name="received_at"/>
+                            <field name="company_ref"/>
+                        </group>
+                    </group>
+                    <field name="body" readonly="1" nolabel="1"
+                           invisible="not body"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_incoming_event_search" model="ir.ui.view">
+        <field name="name">liquidity.incoming.event.search</field>
+        <field name="model">liquidity.incoming.event</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="tenant_id"/>
+                <field name="summary"/>
+                <filter name="unmatched" string="Unmatched"
+                        domain="[('state', '=', 'unmatched')]"/>
+                <filter name="matched" string="Matched"
+                        domain="[('state', '=', 'matched')]"/>
+                <group expand="0" string="Group by">
+                    <filter name="by_tenant" string="Source"
+                            context="{'group_by': 'tenant_id'}"/>
+                    <filter name="by_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_liquidity_incoming_event" model="ir.actions.act_window">
+        <field name="name">From customers</field>
+        <field name="res_model">liquidity.incoming.event</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_unmatched': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing from customers yet</p>
+            <p>Questions a customer sends from their own Odoo arrive here. One
+               the firm cannot place is shown as unmatched rather than
+               dropped.</p>
+        </field>
+    </record>
+
+</odoo>

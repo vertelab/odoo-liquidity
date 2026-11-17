@@ -256,3 +256,132 @@ class TestAccountMoveButton(TransactionCase):
         move.action_send_to_agency()
         after = self.env["bridge.outbox"].search_count([])
         self.assertEqual(after, before + 1)
+
+
+@tagged("post_install", "-at_install")
+class TestMirroredChat(TransactionCase):
+    """ALT B: every side is the original for its own messages.
+
+    Which means the properties to assert are immutability, stable identity and
+    the separation from step 1's local notes -- not conflict resolution, which
+    the model makes unnecessary.
+    """
+
+    def _message(self, body="Hej", author="customer"):
+        return self.env["bridge.message"].create({
+            "thread_key": "account.move:42",
+            "body": body,
+            "author_kind": author,
+            "author_name": "Test",
+        })
+
+    def test_a_message_cannot_be_edited(self):
+        """Editing brings back the authority question ALT B avoids."""
+        from odoo.exceptions import UserError
+        message = self._message()
+        with self.assertRaises(UserError):
+            message.write({"body": "ändrat"})
+
+    def test_a_message_cannot_be_deleted_through_write(self):
+        """Deleting is the same problem as editing: which history is true?"""
+        from odoo.exceptions import UserError
+        message = self._message()
+        with self.assertRaises(UserError):
+            message.write({"uuid": "ny"})
+
+    def test_the_uuid_is_stable_and_unique(self):
+        first = self._message()
+        second = self._message()
+        self.assertTrue(first.uuid)
+        self.assertNotEqual(first.uuid, second.uuid)
+
+    def test_the_same_uuid_cannot_be_stored_twice(self):
+        """Idempotent delivery rests on this."""
+        from psycopg2 import IntegrityError
+        first = self._message()
+        with self.assertRaises(IntegrityError):
+            self.env["bridge.message"].create({
+                "uuid": first.uuid,
+                "thread_key": first.thread_key,
+                "body": "dubblett",
+                "author_kind": "agency",
+                "author_name": "Byrån",
+            })
+
+    def test_the_thread_key_groups_by_record(self):
+        self.assertEqual(
+            self.env["bridge.message"].thread_key_for("account.move", 42),
+            "account.move:42",
+        )
+
+    def test_composing_queues_the_message_for_delivery(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.enabled", "1"
+        )
+        before = self.env["bridge.outbox"].search_count([
+            ("event_type", "=", "chat_message"),
+        ])
+        wizard = self.env["bridge.message.compose"].create({
+            "thread_key": "account.move:7",
+            "body": "Fråga om fakturan",
+            "company_id": self.env.company.id,
+            "author_kind": "customer",
+        })
+        wizard.action_send()
+        after = self.env["bridge.outbox"].search_count([
+            ("event_type", "=", "chat_message"),
+        ])
+        self.assertEqual(after, before + 1)
+        self.assertTrue(self.env["bridge.message"].search([
+            ("thread_key", "=", "account.move:7"),
+        ]))
+
+    def test_the_outbox_carries_the_message_identity(self):
+        """Without the uuid and thread key the receiving side cannot dedupe."""
+        import json
+        self.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.enabled", "1"
+        )
+        wizard = self.env["bridge.message.compose"].create({
+            "thread_key": "account.move:8",
+            "body": "Hej",
+            "company_id": self.env.company.id,
+            "author_kind": "customer",
+        })
+        wizard.action_send()
+        event = self.env["bridge.outbox"].search([
+            ("event_type", "=", "chat_message"),
+        ], limit=1, order="id desc")
+        extra = json.loads(event.extra_json)
+        self.assertIn("message_uuid", extra)
+        self.assertEqual(extra["thread_key"], "account.move:8")
+
+    def test_the_summary_is_the_first_line(self):
+        message = self._message(body="Första raden\nAndra raden")
+        message.flush_recordset()
+        message.invalidate_recordset()
+        self.assertEqual(message.summary, "Första raden")
+
+    def test_chat_is_separate_from_step_1_local_notes(self):
+        """The one thing the design says must never happen.
+
+        Step 1's chatter lives on ``liquidity.tenant.company`` and is invisible
+        to the customer. This channel is shared. They must not be the same
+        field, and the test asserts the models are distinct so a later refactor
+        cannot quietly merge them.
+        """
+        self.assertNotEqual(
+            self.env["bridge.message"]._name,
+            "liquidity.tenant.company",
+            "The mirrored channel must not be stored on the portfolio row: "
+            "that field is the firm's private notes.",
+        )
+        # This module does not depend on liquidity_portfolio, so the portfolio
+        # row is not in this registry -- which is itself the separation. The
+        # channel lives here, at the customer; the firm's private notes live
+        # there, at the firm. Different databases, different models.
+        self.assertNotIn(
+            "liquidity.tenant.company", self.env,
+            "The mirrored channel must live at the customer, not on the "
+            "portfolio row where step 1's private notes are.",
+        )

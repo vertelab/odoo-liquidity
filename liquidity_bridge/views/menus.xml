@@ -19,6 +19,12 @@
               action="action_bridge_incoming"
               sequence="20"/>
 
+    <menuitem id="menu_bridge_message"
+              name="Conversation with the firm"
+              parent="menu_bridge_root"
+              action="action_bridge_message"
+              sequence="15"/>
+
     <menuitem id="menu_bridge_access_log"
               name="Access from the firm"
               parent="menu_bridge_root"

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The mirrored channel. Read-only by construction: a message is an
+         addition, and the list has no edit affordance because there is
+         nothing to edit. -->
+    <record id="view_bridge_message_list" model="ir.ui.view">
+        <field name="name">bridge.message.list</field>
+        <field name="model">bridge.message</field>
+        <field name="arch" type="xml">
+            <list string="Conversation" create="false" delete="false"
+                  edit="false">
+                <field name="sent_at"/>
+                <field name="author_kind" widget="badge"
+                       decoration-info="author_kind == 'agency'"
+                       decoration-success="author_kind == 'customer'"/>
+                <field name="author_name"/>
+                <field name="summary"/>
+                <field name="res_reference"/>
+                <field name="thread_key" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bridge_message_form" model="ir.ui.view">
+        <field name="name">bridge.message.form</field>
+        <field name="model">bridge.message</field>
+        <field name="arch" type="xml">
+            <form string="Message" create="false" delete="false" edit="false">
+                <header>
+                    <button name="action_reply" type="object" string="Reply"
+                            class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="author_kind"/>
+                            <field name="author_name"/>
+                            <field name="sent_at"/>
+                        </group>
+                        <group>
+                            <field name="res_reference"/>
+                            <field name="thread_key"/>
+                            <field name="uuid" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="body" readonly="1" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bridge_message_compose_form" model="ir.ui.view">
+        <field name="name">bridge.message.compose.form</field>
+        <field name="model">bridge.message.compose</field>
+        <field name="arch" type="xml">
+            <form string="Message">
+                <p class="text-muted">
+                    The message goes into both systems. It cannot be edited or
+                    deleted afterwards — if something is wrong, write a new
+                    message. That is what keeps both parties holding the same
+                    history.
+                </p>
+                <group>
+                    <field name="thread_key" invisible="1"/>
+                    <field name="author_kind"/>
+                    <field name="res_reference" readonly="1"/>
+                </group>
+                <field name="body" placeholder="What do you want to say?"
+                       nolabel="1"/>
+                <footer>
+                    <button name="action_send" type="object" string="Send"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bridge_message" model="ir.actions.act_window">
+        <field name="name">Conversation with the firm</field>
+        <field name="res_model">bridge.message</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No messages yet</p>
+            <p>Messages between you and the accounting firm appear here, in
+               both systems. They cannot be edited once sent.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -66,6 +66,7 @@ customer's terms.
         "views/bridge_token_views.xml",
         "views/bridge_access_log_views.xml",
         "views/bridge_incoming_views.xml",
+        "views/bridge_message_views.xml",
         "views/account_move_views.xml",
         "views/menus.xml",
     ],

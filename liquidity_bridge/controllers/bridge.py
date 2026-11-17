@@ -110,6 +110,52 @@ class LiquidityBridgeController(http.Controller):
         })
         return _json({"status": "stored", "id": row.id}, status=201)
 
+    # -- incoming chat message ---------------------------------------------
+
+    @http.route("/liquidity_bridge/message", type="http", auth="none",
+                methods=["POST"], csrf=False)
+    def receive_message(self, **kwargs):
+        """A chat message from the firm, into the mirrored channel.
+
+        Idempotent by ``uuid``: the firm retries when it is unsure a delivery
+        landed, and a retry must not duplicate the message. The uuid is the
+        firm's, not ours, because the firm is the original for its own
+        messages.
+        """
+        ok, response = _authorised()
+        if not ok:
+            return response
+
+        try:
+            payload = json.loads(request.httprequest.get_data(as_text=True) or "{}")
+        except ValueError:
+            return _json({"error": "bad_json"}, status=400)
+
+        message_uuid = payload.get("uuid")
+        body = payload.get("body")
+        thread_key = payload.get("thread_key")
+        if not message_uuid or not body or not thread_key:
+            return _json({"error": "missing_fields"}, status=400)
+
+        Message = request.env["bridge.message"].sudo()
+        existing = Message.search([("uuid", "=", message_uuid)], limit=1)
+        if existing:
+            return _json({"status": "duplicate", "id": existing.id})
+
+        message = Message.create({
+            "uuid": message_uuid,
+            "thread_key": thread_key,
+            "body": body,
+            "author_kind": "agency",
+            "author_name": payload.get("author_name")
+                           or _config().agency_name() or "agency",
+            "sent_at": payload.get("sent_at") or fields_now(),
+            "res_model": payload.get("res_model") or False,
+            "res_id": payload.get("res_id") or 0,
+            "res_reference": payload.get("res_reference") or False,
+        })
+        return _json({"status": "stored", "id": message.id}, status=201)
+
     # -- session request ---------------------------------------------------
 
     @http.route("/liquidity_bridge/request", type="http", auth="none",

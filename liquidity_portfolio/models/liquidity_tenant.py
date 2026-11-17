@@ -626,6 +626,39 @@ class LiquidityTenant(models.Model):
         except ValueError:
             return {"ok": False, "reason": "the bridge answered with non-JSON"}
 
+    #: The bridge versions this module knows how to talk to. A tuple of
+    #: (major, minor) -- patch releases are compatible by definition.
+    #:
+    #: Kept here rather than read from the bridge: the *firm* decides what it
+    #: supports, and a bridge that claims compatibility should not be believed
+    #: without the firm agreeing.
+    SUPPORTED_BRIDGE_VERSIONS = ((18, 0),)
+
+    def _bridge_version_supported(self, version_string):
+        """Whether a bridge version is one this module can talk to.
+
+        Returns (ok, reason). An unparseable version is *not* supported: a
+        bridge that cannot say what it is cannot be trusted to behave like
+        anything in particular.
+        """
+        if not version_string:
+            return False, "the bridge did not report its version"
+        try:
+            parts = str(version_string).split(".")
+            major, minor = int(parts[0]), int(parts[1])
+        except (IndexError, TypeError, ValueError):
+            return False, "the bridge reported an unreadable version (%s)" % (
+                version_string,
+            )
+        if (major, minor) not in self.SUPPORTED_BRIDGE_VERSIONS:
+            return False, (
+                "the customer's bridge is version %s, this module supports %s"
+                % (version_string, ", ".join(
+                    "%s.%s" % v for v in self.SUPPORTED_BRIDGE_VERSIONS
+                ))
+            )
+        return True, ""
+
     def _bridge_status(self):
         """Is the bridge usable, and if not, why.
 
@@ -644,6 +677,14 @@ class LiquidityTenant(models.Model):
         if not result["ok"]:
             return {"available": False, "reason": result["reason"]}
         data = result["data"] or {}
+        version_ok, version_reason = self._bridge_version_supported(
+            data.get("version")
+        )
+        if not version_ok:
+            # A version mismatch is its own reason: the fix is an upgrade on
+            # one side, not a setting. Saying "does not allow" would send the
+            # reader to the wrong screen.
+            return {"available": False, "reason": version_reason}
         if not data.get("enabled"):
             return {"available": False,
                     "reason": "the bridge is switched off at the customer"}

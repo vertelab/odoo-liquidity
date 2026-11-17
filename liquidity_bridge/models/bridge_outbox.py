@@ -15,6 +15,7 @@ Two rules:
   to the customer's own admin. An event that has failed ten times is a problem
   the customer can see, not one they discover by asking why nobody answered.
 """
+import json
 import logging
 import uuid
 
@@ -101,6 +102,12 @@ class BridgeOutbox(models.Model):
     attempts = fields.Integer(string="Attempts", default=0, readonly=True)
     last_attempt_at = fields.Datetime(string="Last attempt", readonly=True)
     last_error = fields.Text(string="Last error", readonly=True)
+    extra_json = fields.Text(
+        string="Additional fields",
+        help="Per-event-type fields as JSON (the message uuid and thread key "
+             "for a chat message). A column per event type would grow the "
+             "queue's schema every time a new event is invented.",
+    )
     delivered_at = fields.Datetime(string="Delivered", readonly=True)
 
     _sql_constraints = [
@@ -113,8 +120,13 @@ class BridgeOutbox(models.Model):
 
     @api.model
     def enqueue(self, event_type, summary, body=None, res_model=None, res_id=None,
-                res_reference=None):
-        """Put an event in the queue. Always succeeds -- that is the point."""
+                res_reference=None, extra=None):
+        """Put an event in the queue. Always succeeds -- that is the point.
+
+        ``extra`` carries per-type fields (the message uuid and thread key for
+        a chat message) as JSON. A column per event type would make the queue
+        grow a schema every time a new event is invented.
+        """
         return self.create({
             "event_type": event_type,
             "summary": summary,
@@ -122,6 +134,7 @@ class BridgeOutbox(models.Model):
             "res_model": res_model,
             "res_id": res_id,
             "res_reference": res_reference,
+            "extra_json": json.dumps(extra) if extra else False,
         })
 
     def action_retry(self):
@@ -212,6 +225,7 @@ class BridgeOutbox(models.Model):
             "company_name": self.company_id.name,
             "sent_by": self.user_id.name or "",
             "sent_at": fields.Datetime.to_string(self.create_date),
+            "extra": json.loads(self.extra_json) if self.extra_json else {},
             "bridge_version": self.env["ir.module.module"].sudo().search(
                 [("name", "=", "liquidity_bridge")], limit=1
             ).latest_version or "",

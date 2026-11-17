@@ -31,6 +31,12 @@
               action="action_liquidity_agency_basis_wizard"
               sequence="30"/>
 
+    <menuitem id="menu_liquidity_incoming_event"
+              name="From customers"
+              parent="menu_liquidity_portfolio_root"
+              action="action_liquidity_incoming_event"
+              sequence="20"/>
+
     <menuitem id="menu_liquidity_portfolio_sources"
               name="Sources"
               parent="menu_liquidity_portfolio_config"

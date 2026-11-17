@@ -96,9 +96,22 @@ class BridgeConfig(models.AbstractModel):
         return self._get(PARAM_AGENCY_URL, "")
 
     @api.model
+    def bridge_version(self):
+        """The installed bridge version, so the firm can refuse a mismatch.
+
+        Read from the module record rather than hardcoded: a constant would
+        drift from the manifest on the first release.
+        """
+        module = self.env["ir.module.module"].sudo().search(
+            [("name", "=", "liquidity_bridge")], limit=1
+        )
+        return module.latest_version or ""
+
+    @api.model
     def status(self):
         """One dict for the settings screen and for the firm's connection test."""
         return {
+            "version": self.bridge_version(),
             "enabled": self.is_enabled(),
             "agency": self.agency_name(),
             "allows_agency_accounts": self.allows_agency_accounts(),
