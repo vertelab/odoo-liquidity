@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_bridge_root"
+              name="Accounting Firm"
+              parent="account.menu_finance_configuration"
+              sequence="90"
+              groups="group_bridge_manager"/>
+
+    <menuitem id="menu_bridge_outbox"
+              name="Sent to the firm"
+              parent="menu_bridge_root"
+              action="action_bridge_outbox"
+              sequence="10"/>
+
+    <menuitem id="menu_bridge_incoming"
+              name="Received from the firm"
+              parent="menu_bridge_root"
+              action="action_bridge_incoming"
+              sequence="20"/>
+
+    <menuitem id="menu_bridge_access_log"
+              name="Access from the firm"
+              parent="menu_bridge_root"
+              action="action_bridge_access_log"
+              sequence="30"/>
+
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bridge_outbox_user,bridge.outbox user,model_bridge_outbox,base.group_user,1,1,1,1
+access_bridge_outbox_manager,bridge.outbox manager,model_bridge_outbox,group_bridge_manager,1,1,1,1
+access_bridge_incoming_manager,bridge.incoming manager,model_bridge_incoming,group_bridge_manager,1,1,1,1
+access_bridge_token_manager,bridge.token manager,model_bridge_token,group_bridge_manager,1,1,1,1
+access_bridge_access_log_manager,bridge.access.log manager,model_bridge_access_log,group_bridge_manager,1,0,0,0

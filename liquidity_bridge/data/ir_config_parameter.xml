@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Defaults are the restrictive ones. A bridge that is installed and
+             forgotten must not be a bridge that grants access. -->
+        <record id="param_enabled" model="ir.config_parameter">
+            <field name="key">liquidity_bridge.enabled</field>
+            <field name="value">0</field>
+        </record>
+        <record id="param_allow_agency_accounts" model="ir.config_parameter">
+            <field name="key">liquidity_bridge.allow_agency_accounts</field>
+            <field name="value">0</field>
+        </record>
+        <record id="param_allow_impersonation" model="ir.config_parameter">
+            <field name="key">liquidity_bridge.allow_impersonation</field>
+            <field name="value">0</field>
+        </record>
+        <record id="param_token_ttl" model="ir.config_parameter">
+            <field name="key">liquidity_bridge.token_ttl_seconds</field>
+            <field name="value">60</field>
+        </record>
+    </data>
+</odoo>

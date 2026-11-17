@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_bridge_incoming_list" model="ir.ui.view">
+        <field name="name">bridge.incoming.list</field>
+        <field name="model">bridge.incoming</field>
+        <field name="arch" type="xml">
+            <list string="Received from the firm" create="false" delete="false"
+                  decoration-info="not is_read">
+                <field name="received_at"/>
+                <field name="agency"/>
+                <field name="summary"/>
+                <field name="event_type"/>
+                <field name="is_read" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bridge_incoming_form" model="ir.ui.view">
+        <field name="name">bridge.incoming.form</field>
+        <field name="model">bridge.incoming</field>
+        <field name="arch" type="xml">
+            <form string="From the firm" create="false" delete="false">
+                <header>
+                    <button name="action_mark_read" type="object"
+                            string="Mark as read" class="btn-secondary"
+                            invisible="is_read"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="summary"/>
+                            <field name="agency"/>
+                            <field name="event_type"/>
+                            <field name="received_at"/>
+                        </group>
+                        <group>
+                            <field name="uuid" readonly="1"/>
+                            <field name="is_read"/>
+                            <field name="res_model"/>
+                            <field name="res_id"/>
+                        </group>
+                    </group>
+                    <field name="body" readonly="1" invisible="not body"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bridge_incoming" model="ir.actions.act_window">
+        <field name="name">Received from the firm</field>
+        <field name="res_model">bridge.incoming</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

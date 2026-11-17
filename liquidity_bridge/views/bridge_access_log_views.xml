@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The question the customer actually asks: who from the firm was in our
+         books, and when. The device log answers a different question. -->
+    <record id="view_bridge_access_log_list" model="ir.ui.view">
+        <field name="name">bridge.access.log.list</field>
+        <field name="model">bridge.access.log</field>
+        <field name="arch" type="xml">
+            <list string="Access from the firm" create="false" delete="false"
+                  decoration-danger="outcome == 'refused'">
+                <field name="opened_at"/>
+                <field name="agency"/>
+                <field name="user_id" string="Opened as"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="outcome" widget="badge"
+                       decoration-success="outcome == 'granted'"
+                       decoration-danger="outcome == 'refused'"/>
+                <field name="reason" optional="show"/>
+                <field name="ip_address" optional="hide"/>
+                <field name="menu_xmlid" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bridge_access_log_search" model="ir.ui.view">
+        <field name="name">bridge.access.log.search</field>
+        <field name="model">bridge.access.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agency"/>
+                <field name="user_id"/>
+                <filter name="granted" string="Opened"
+                        domain="[('outcome', '=', 'granted')]"/>
+                <filter name="refused" string="Refused"
+                        domain="[('outcome', '=', 'refused')]"/>
+                <group expand="0" string="Group by">
+                    <filter name="by_agency" string="Agency"
+                            context="{'group_by': 'agency'}"/>
+                    <filter name="by_user" string="User"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="by_day" string="Day"
+                            context="{'group_by': 'opened_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bridge_access_log" model="ir.actions.act_window">
+        <field name="name">Access from the firm</field>
+        <field name="res_model">bridge.access.log</field>
+        <field name="view_mode">list</field>
+    </record>
+
+</odoo>

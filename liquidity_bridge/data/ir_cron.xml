@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- The outbox retries on a schedule. Short interval on purpose: a
+             customer waiting for an answer should not wait an hour for the
+             queue to be flushed. -->
+        <record id="ir_cron_bridge_deliver" model="ir.cron">
+            <field name="name">Bridge: deliver queued events</field>
+            <field name="model_id" ref="model_bridge_outbox"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_deliver()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Expired tokens are deleted. A token that cannot be used is only a
+             liability. -->
+        <record id="ir_cron_bridge_purge_tokens" model="ir.cron">
+            <field name="name">Bridge: purge expired tokens</field>
+            <field name="model_id" ref="model_bridge_token"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_purge()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

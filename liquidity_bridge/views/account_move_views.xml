@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The customer's button. On invoices and journal entries, because those
+         are the two things a customer has a question about. -->
+    <record id="view_move_form_bridge_button" model="ir.ui.view">
+        <field name="name">account.move.form.bridge</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_send_to_agency" type="object"
+                        string="Ask the accounting firm"
+                        class="btn-secondary"
+                        groups="account.group_account_user"
+                        help="Queue this document for the accounting firm. It is
+                              delivered from a local queue, so a bad connection
+                              does not lose the question."/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
