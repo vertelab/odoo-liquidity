@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Liquidity Bridge",
-    "version": "18.0.1.0.0",
+    "version": "1.0.0",
     "category": "Accounting/Accounting",
     "summary": "Installed at the customer: lets the accounting firm send and open, not only read",
     "description": """Liquidity Bridge

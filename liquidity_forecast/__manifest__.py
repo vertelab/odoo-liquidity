@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Liquidity Forecast",
-    "version": "18.0.1.0.0",
+    "version": "1.0.0",
     "category": "Accounting/Accounting",
     "summary": "Deterministic 90-day liquidity forecast from open receivables and payables",
     "description": """Liquidity Forecast

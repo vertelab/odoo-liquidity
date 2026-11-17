@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="liquidity_simulation.SimulationBand">
+        <div class="o_liquidity_band">
+            <t t-if="!hasBand">
+                <!-- Nothing to draw. An empty frame would look like a result,
+                     so the component renders nothing at all. -->
+            </t>
+            <t t-else="">
+                <div class="o_liquidity_band_legend">
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_area">
+                        P10–P90
+                    </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_median">
+                        P50 (median)
+                    </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_baseline">
+                        Deterministic forecast
+                    </span>
+                    <span class="o_liquidity_band_legend_item o_liquidity_band_legend_event">
+                        Tax / payroll / loan
+                    </span>
+                </div>
+
+                <svg class="o_liquidity_band_svg" role="img"
+                     t-att-viewBox="'0 0 ' + geometry.width + ' ' + geometry.height"
+                     t-att-height="geometry.height"
+                     aria-label="Probability band around the liquidity forecast">
+
+                    <!-- Below zero, shaded, so a breach is visible without
+                         reading a number. -->
+                    <rect t-if="geometry.negativeHeight > 0"
+                          x="72" t-att-y="geometry.zeroY"
+                          t-att-width="geometry.innerW"
+                          t-att-height="geometry.negativeHeight"
+                          class="o_liquidity_band_negative"/>
+
+                    <path t-att-d="geometry.bandPath" class="o_liquidity_band_area"/>
+                    <path t-att-d="geometry.medianPath" class="o_liquidity_band_median"/>
+                    <path t-if="geometry.baselinePath"
+                          t-att-d="geometry.baselinePath"
+                          class="o_liquidity_band_baseline"/>
+
+                    <line x1="72" t-att-x2="72 + geometry.innerW"
+                          t-att-y1="geometry.zeroY" t-att-y2="geometry.zeroY"
+                          class="o_liquidity_band_zero"/>
+                    <text x="64" t-att-y="geometry.zeroY + 4"
+                          class="o_liquidity_band_axis" text-anchor="end">0</text>
+
+                    <!-- Event markers: a dip in the band gets a visible cause. -->
+                    <g t-foreach="geometry.events" t-as="event" t-key="event.key">
+                        <line t-att-x1="event.x" t-att-x2="event.x"
+                              y1="24" t-att-y2="24 + geometry.innerH"
+                              class="o_liquidity_band_event"/>
+                        <text t-att-x="event.x + 3" y="36"
+                              class="o_liquidity_band_event_label"
+                              <!-- #if VERSION <= "19.0" -->
+                              t-esc="event.label"/>
+                              <!-- #else -->
+                              t-out="event.label"/>
+                              <!-- #endif -->
+                    </g>
+
+                    <!-- Click target per day. Transparent, full height, so the
+                         whole column is clickable and not just the 1px line. -->
+                    <g t-foreach="geometry.hitAreas" t-as="hit" t-key="hit.key">
+                        <rect t-att-x="hit.x" y="24"
+                              t-att-width="hit.width"
+                              t-att-height="geometry.innerH"
+                              t-att-class="'o_liquidity_band_hit' + (state.selectedDate === hit.date ? ' o_liquidity_band_hit_selected' : '')"
+                              t-on-click="() => this.onDayClick(hit.date)">
+                            <!-- #if VERSION <= "19.0" -->
+                            <title t-esc="hit.date"/>
+                            <!-- #else -->
+                            <title t-out="hit.date"/>
+                            <!-- #endif -->
+                        </rect>
+                    </g>
+
+                    <text x="72" t-att-y="geometry.height - 10"
+                          <!-- #if VERSION <= "19.0" -->
+                          class="o_liquidity_band_axis" t-esc="geometry.firstDate"/>
+                          <!-- #else -->
+                          class="o_liquidity_band_axis" t-out="geometry.firstDate"/>
+                          <!-- #endif -->
+                    <text t-att-x="72 + geometry.innerW" t-att-y="geometry.height - 10"
+                          class="o_liquidity_band_axis" text-anchor="end"
+                          <!-- #if VERSION <= "19.0" -->
+                          t-esc="geometry.lastDate"/>
+                          <!-- #else -->
+                          t-out="geometry.lastDate"/>
+                          <!-- #endif -->
+                </svg>
+
+                <!-- Drill-down: what happened on the clicked day, and what
+                     drives the uncertainty overall. -->
+                <div t-if="selectedLine" class="o_liquidity_band_detail">
+                    <div class="o_liquidity_band_detail_header">
+                        <!-- #if VERSION <= "19.0" -->
+                        <strong t-esc="selectedLine.date"/>
+                        <!-- #else -->
+                        <strong t-out="selectedLine.date"/>
+                        <!-- #endif -->
+                        <button type="button" class="btn btn-link btn-sm"
+                                t-on-click="() => this.onDayClick(selectedLine.date)">
+                            Close
+                        </button>
+                    </div>
+                    <dl class="o_liquidity_band_detail_grid">
+                        <dt>P10</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="selectedLine.p10"/>
+                        <!-- #else -->
+                        <dd t-out="selectedLine.p10"/>
+                        <!-- #endif -->
+                        <dt>P50</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="selectedLine.p50"/>
+                        <!-- #else -->
+                        <dd t-out="selectedLine.p50"/>
+                        <!-- #endif -->
+                        <dt>P90</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="selectedLine.p90"/>
+                        <!-- #else -->
+                        <dd t-out="selectedLine.p90"/>
+                        <!-- #endif -->
+                        <dt>Baseline</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="selectedLine.baseline_balance or '—'"/>
+                        <!-- #else -->
+                        <dd t-out="selectedLine.baseline_balance or '—'"/>
+                        <!-- #endif -->
+                        <dt>P(negative)</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="formatPercent(selectedLine.p_negative)"/>
+                        <!-- #else -->
+                        <dd t-out="formatPercent(selectedLine.p_negative)"/>
+                        <!-- #endif -->
+                        <dt>Events</dt>
+                        <!-- #if VERSION <= "19.0" -->
+                        <dd t-esc="selectedLine.expected_events or '—'"/>
+                        <!-- #else -->
+                        <dd t-out="selectedLine.expected_events or '—'"/>
+                        <!-- #endif -->
+                    </dl>
+                    <div t-if="selectedContributions.length" class="o_liquidity_band_detail_drivers">
+                        <p class="o_liquidity_band_detail_caption">
+                            What drives the uncertainty in this simulation:
+                        </p>
+                        <ul>
+                            <li t-foreach="selectedContributions" t-as="contribution"
+                                t-key="contribution.id">
+                                <!-- #if VERSION <= "19.0" -->
+                                <span t-esc="contribution.label"/>
+                                <!-- #else -->
+                                <span t-out="contribution.label"/>
+                                <!-- #endif -->
+                                <span class="o_liquidity_band_detail_share"
+                                      <!-- #if VERSION <= "19.0" -->
+                                      t-esc="formatPercent(contribution.variance_share)"/>
+                                      <!-- #else -->
+                                      t-out="formatPercent(contribution.variance_share)"/>
+                                      <!-- #endif -->
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p class="o_liquidity_band_note">
+                    The band shows historical payment behaviour, not a
+                    guarantee about the future. The median is a midline, not a
+                    promise — the figure to lean on in a credit decision is
+                    the worst 5 %.
+                </p>
+            </t>
+        </div>
+    </t>
+
+</templates>

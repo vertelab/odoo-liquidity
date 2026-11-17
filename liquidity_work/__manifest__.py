@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Liquidity Work",
-    "version": "18.0.1.0.0",
+    "version": "1.0.0",
     "category": "Accounting/Accounting",
     "summary": "Recurring work orders per bookkeeping, generated from a product's plan",
     "description": """Liquidity Work

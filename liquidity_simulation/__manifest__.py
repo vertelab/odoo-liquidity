@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Liquidity Simulation",
-    "version": "18.0.1.0.0",
+    "version": "1.0.0",
     "category": "Accounting/Accounting",
     "summary": "Monte Carlo probability band around the deterministic liquidity forecast",
     "description": """Liquidity Simulation

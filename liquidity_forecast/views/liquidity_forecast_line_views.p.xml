@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_forecast_line_list" model="ir.ui.view">
+        <field name="name">liquidity.forecast.line.list</field>
+        <field name="model">liquidity.forecast.line</field>
+        <field name="arch" type="xml">
+            <list string="Daily Lines"
+                  decoration-danger="closing_balance &lt; 0"
+                  decoration-warning="closing_balance == 0"
+                  create="false" edit="false">
+                <field name="date"/>
+                <field name="opening_balance" sum="Total"/>
+                <field name="incoming" sum="Total"/>
+                <field name="outgoing" sum="Total"/>
+                <field name="closing_balance" sum="Total"/>
+                <field name="forecast_id" optional="show"/>
+                <field name="has_event" optional="hide"/>
+                <field name="event_type" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_liquidity_forecast_line_search" model="ir.ui.view">
+        <field name="name">liquidity.forecast.line.search</field>
+        <field name="model">liquidity.forecast.line</field>
+        <field name="arch" type="xml">
+            <search string="Daily Lines">
+                <field name="forecast_id"/>
+                <field name="date"/>
+                <filter name="negative" string="Negative Balance"
+                        domain="[('closing_balance', '&lt;', 0)]"/>
+                <filter name="events" string="With Event"
+                        domain="[('has_event', '=', True)]"/>
+                <!-- #if VERSION <= "19.0" -->
+                <group expand="0" string="Group By">
+                <!-- #endif -->
+                    <filter name="group_forecast" string="Forecast"
+                            context="{'group_by': 'forecast_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                <!-- #if VERSION <= "19.0" -->
+                </group>
+                <!-- #endif -->
+            </search>
+        </field>
+    </record>
+
+    <record id="action_liquidity_forecast_line" model="ir.actions.act_window">
+        <field name="name">Daily Lines</field>
+        <field name="res_model">liquidity.forecast.line</field>
+        <field name="view_mode">list</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,11 @@
+id,name,model_id,group_id/id,operation,domain
+access_liquidity_work_template_user,liquidity.work.template user,model_liquidity_work_template,group_liquidity_work_user,r,[]
+access_liquidity_work_template_manager,liquidity.work.template manager,model_liquidity_work_template,group_liquidity_work_manager,crud,[]
+access_liquidity_work_template_line_user,liquidity.work.template.line user,model_liquidity_work_template_line,group_liquidity_work_user,r,[]
+access_liquidity_work_template_line_manager,liquidity.work.template.line manager,model_liquidity_work_template_line,group_liquidity_work_manager,crud,[]
+access_liquidity_work_plan_user,liquidity.work.plan user,model_liquidity_work_plan,group_liquidity_work_user,r,[]
+access_liquidity_work_plan_manager,liquidity.work.plan manager,model_liquidity_work_plan,group_liquidity_work_manager,crud,[]
+access_liquidity_work_order_user,liquidity.work.order user,model_liquidity_work_order,group_liquidity_work_user,ru,[]
+access_liquidity_work_order_manager,liquidity.work.order manager,model_liquidity_work_order,group_liquidity_work_manager,crud,[]
+access_liquidity_work_timesheet_user,liquidity.work.timesheet user,model_liquidity_work_timesheet,group_liquidity_work_user,cru,[]
+access_liquidity_work_timesheet_manager,liquidity.work.timesheet manager,model_liquidity_work_timesheet,group_liquidity_work_manager,crud,[]

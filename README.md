@@ -422,3 +422,61 @@ checkmodule -d <db> -m liquidity_work -t -l test --test-tags /liquidity_work
 
 Customer-initiated requests, chat mirroring and Fortnox/Visma drivers are
 separate changes (`portfolio-steg2-kundbrygga`, `portfolio-steg2-externa-drivers`).
+
+## P-filer — 18.0 är baseline, 19.0/20.0 via villkor
+
+Modulerna utvecklas i **p-filer** (`.p.py`, `.p.xml`) som expanderas till den
+utgåva de ska köras på. 18.0 är baseline: dess utdata är **identisk** med den
+handskrivna koden, så expansionen ändrar ingenting för den utgåvan.
+
+```
+models/x.p.py  ──preprocess -D VERSION=18.0──▶  models/x.py   (baseline)
+               ──preprocess -D VERSION=20.0──▶  models/x.py   (villkorade delar)
+```
+
+### Vad som faktiskt skiljer — och därför villkoras
+
+Bara det som **bevisligen** bryts i en senare utgåva. Allt annat står ovillkorat.
+
+| Fil | Villkor | Varför |
+|---|---|---|
+| `__manifest__.p.py` | `version` utan utgåveprefix | `18.0.1.0.0` gör modulen oinstallerbar i 19/20 (`adapt_version`) |
+| `__manifest__.p.py` | `ir.access.csv` vs `ir.model.access.csv` | filnamnet bestämmer modellen i 20.0, och formatet är omgjort |
+| `security/ir.access.csv` | egen fil för 20.0 | en rad per operation, `model_id` utan `:id` |
+| `views/*.p.xml` | `<group expand="0">` i `<search>` | wrappern finns inte i 20.0; group-by-filtren ligger platt |
+| `static/**/*.p.xml` | `t-esc` → `t-out` | `t-esc` togs bort i 20.0 |
+
+**Inget annat är villkorat.** Inga `attrs`, inga `states`, ingen `tree` — de
+finns inte i koden, och att villkora något som är lika i alla utgåvor är brus
+som döljer de riktiga skillnaderna.
+
+### Expansion
+
+```bash
+# Alltid: expandera för RÄTT utgåva precis före testet.
+# Utdatafilen är gemensam — en loop som slutar på 20.0 lämnar 20.0-kod
+# på disk när du sedan testar 18.0.
+for f in $(git ls-files '*.p.py' '*.p.xml'); do
+    out=$(echo "$f" | sed -E 's/\.p\.(py|xml)$/.\1/')
+    rm -f "$out"
+    preprocess -f -D VERSION=18.0 -o "$out" "$f"
+done
+```
+
+`.githooks/pre-commit` gör detta automatiskt för staged p-filer, för den gren
+du står på. Hooken är versionshanterad (`core.hooksPath=.githooks`) och kräver
+`preprocess`:
+
+```bash
+python3 -m pip install --break-system-packages preprocess
+```
+
+### Verifierat
+
+| Kontroll | Resultat |
+|---|---|
+| 18.0-expansion vs handskriven kod | **identisk** för alla 9 p-filer |
+| 18.0/19.0/20.0 XML-välformad | alla 9 |
+| 20.0 tappar `<group expand>` | ja (0 förekomster) |
+| 20.0 byter `t-esc` → `t-out` | 12 → 0 / 0 → 12 |
+| 20.0-manifest pekar på `ir.access.csv` | ja |

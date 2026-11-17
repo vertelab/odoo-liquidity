@@ -376,15 +376,24 @@ class TestMirroredChat(TransactionCase):
             "The mirrored channel must not be stored on the portfolio row: "
             "that field is the firm's private notes.",
         )
-        # This module does not depend on liquidity_portfolio, so the portfolio
-        # row is not in this registry -- which is itself the separation. The
-        # channel lives here, at the customer; the firm's private notes live
-        # there, at the firm. Different databases, different models.
-        self.assertNotIn(
-            "liquidity.tenant.company", self.env,
-            "The mirrored channel must live at the customer, not on the "
-            "portfolio row where step 1's private notes are.",
+        # The property is about *models*, not about what happens to be
+        # installed: liquidity_portfolio may well be present in the same
+        # database (it is, when both modules are installed together), and that
+        # does not merge the two threads. What must hold is that the channel is
+        # its own model and never a field on the portfolio row.
+        self.assertNotEqual(
+            self.env["bridge.message"]._name,
+            "liquidity.tenant.company",
+            "The mirrored channel must be its own model, not the portfolio "
+            "row where step 1's private notes live.",
         )
+        if "liquidity.tenant.company" in self.env:
+            field_names = set(self.env["liquidity.tenant.company"]._fields)
+            self.assertNotIn(
+                "bridge_message_ids", field_names,
+                "Step 1's local notes and the mirrored channel must not share "
+                "a field: the notes are invisible to the customer.",
+            )
 
 
 @tagged("post_install", "-at_install")

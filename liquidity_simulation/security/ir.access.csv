@@ -1,0 +1,9 @@
+id,name,model_id,group_id/id,operation,domain
+access_liquidity_simulation_readonly,liquidity.simulation readonly,model_liquidity_simulation,account.group_account_readonly,r,[]
+access_liquidity_simulation_manager,liquidity.simulation manager,model_liquidity_simulation,account.group_account_manager,crud,[]
+access_liquidity_simulation_line_readonly,liquidity.simulation.line readonly,model_liquidity_simulation_line,account.group_account_readonly,r,[]
+access_liquidity_simulation_line_manager,liquidity.simulation.line manager,model_liquidity_simulation_line,account.group_account_manager,crud,[]
+access_liquidity_variance_readonly,liquidity.variance.contribution readonly,model_liquidity_variance_contribution,account.group_account_readonly,r,[]
+access_liquidity_variance_manager,liquidity.variance.contribution manager,model_liquidity_variance_contribution,account.group_account_manager,crud,[]
+access_liquidity_payment_profile_readonly,liquidity.payment.profile readonly,model_liquidity_payment_profile,account.group_account_readonly,r,[]
+access_liquidity_payment_profile_manager,liquidity.payment.profile manager,model_liquidity_payment_profile,account.group_account_manager,crud,[]

@@ -1,0 +1,10 @@
+# p-filer är källkod i sitt eget språk. Utan detta behandlas de som binärer
+# eller får CRLF, och då slutar preprocessorn att känna igen dem.
+*.p.py   text eol=lf
+*.p.xml  text eol=lf
+*.p.js   text eol=lf
+*.p.csv  text eol=lf
+
+# Utdata är genererad. Den committas (Odoo måste kunna läsa modulen) men ska
+# inte visas som ändrad i varje diff bara för att en p-fil rörts.
+# Ingen linguist-generated här: en granskare måste kunna se utdata.

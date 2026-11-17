@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         ÖVERSIKTEN — en rad per bokföring.
+         Listan är primär: den ska läsas på avstånd, inte öppnas radvis.
+         ================================================================ -->
+    <record id="view_liquidity_tenant_company_list" model="ir.ui.view">
+        <field name="name">liquidity.tenant.company.list</field>
+        <field name="model">liquidity.tenant.company</field>
+        <field name="arch" type="xml">
+            <list string="Liquidity" create="false" delete="false"
+                  decoration-danger="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'danger'"
+                  decoration-warning="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'warning'"
+                  decoration-success="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'good'"
+                  decoration-muted="(truth_kind == 'read' and kpi_status in ('unreachable', 'no_forecast')) or (truth_kind == 'derived' and driver_status in ('unsupported', 'failed')) or missing_since">
+                <field name="name" string="Bookkeeping"/>
+                <field name="tenant_id" string="Source"/>
+                <!-- Kind of truth, always visible: a derived row must never be
+                     read as if it were the customer's own figure. -->
+                <field name="truth_kind" widget="badge" string="Kind"
+                       decoration-info="truth_kind == 'read'"
+                       decoration-warning="truth_kind == 'derived'"/>
+                <field name="risk_level" widget="badge"
+                       decoration-danger="risk_level == 'danger'"
+                       decoration-warning="risk_level == 'warning'"
+                       decoration-success="risk_level == 'good'"
+                       string="Risk"/>
+                <field name="days_to_crisis" string="Days"
+                       decoration-muted="crisis_kind == 'none_in_horizon'"
+                       help="Read with crisis_kind: 0 means no crisis within the horizon, not crisis today."/>
+                <field name="crisis_kind" column_invisible="True"/>
+                <field name="lowest_balance" widget="monetary" string="Lowest"/>
+                <field name="lowest_balance_date" string="On"/>
+                <field name="opening_balance" widget="monetary" string="Opening"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="computed_at" string="Computed" optional="show"/>
+                <field name="kpi_status" widget="badge" string="Status"
+                       decoration-danger="kpi_status in ('unreachable', 'auth_error', 'rpc_error')"
+                       decoration-warning="kpi_status in ('draft', 'no_forecast', 'stale')"
+                       decoration-success="kpi_status == 'ok'"/>
+                <field name="kpi_message" string="Message" optional="hide"/>
+                <!-- Driven rows: derived figures, status and what is missing. -->
+                <field name="driver_status" widget="badge" string="Fetch"
+                       optional="show"
+                       decoration-danger="driver_status in ('auth_expired', 'failed')"
+                       decoration-warning="driver_status in ('partial', 'rate_limited', 'unsupported')"
+                       decoration-success="driver_status == 'ok'"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_message" string="Missing" optional="show"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_cash_position" widget="monetary"
+                       string="Cash" optional="show"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_receivables_open" widget="monetary"
+                       string="Receivables" optional="hide"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_payables_open" widget="monetary"
+                       string="Payables" optional="hide"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="missing_since" optional="hide"/>
+                <field name="active" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kanban: samma data, läst som kort. Färgen bär allvaret. -->
+    <record id="view_liquidity_tenant_company_kanban" model="ir.ui.view">
+        <field name="name">liquidity.tenant.company.kanban</field>
+        <field name="model">liquidity.tenant.company</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="tenant_id" create="false" delete="false"
+                    class="o_kanban_mobile">
+                <field name="risk_level"/>
+                <field name="kpi_status"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_card d-flex flex-column p-2"
+                             t-att-style="risk_level == 'danger' and 'border-left: 4px solid #dc3545' or (risk_level == 'warning' and 'border-left: 4px solid #ffc107' or (risk_level == 'good' and 'border-left: 4px solid #28a745' or 'border-left: 4px solid #adb5bd'))">
+                            <strong><field name="name"/></strong>
+                            <small class="text-muted"><field name="tenant_id"/></small>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span t-if="kpi_status == 'ok'">
+                                    <field name="days_to_crisis" class="fw-bold"/> d
+                                </span>
+                                <span t-if="kpi_status == 'unreachable'" class="text-muted">
+                                    No answer — open to try again
+                                </span>
+                                <span t-if="kpi_status == 'draft'" class="text-muted">
+                                    No opening balance
+                                </span>
+                                <span t-if="kpi_status == 'no_forecast'" class="text-muted">
+                                    No forecast
+                                </span>
+                                <span t-if="kpi_status == 'stale'" class="text-warning">
+                                    Last run failed
+                                </span>
+                                <span t-if="kpi_status == 'auth_error'" class="text-danger">
+                                    Key refused
+                                </span>
+                                <!-- Driven rows: the three states that must
+                                     never be collapsed into "no answer". -->
+                                <span t-if="truth_kind == 'derived' and driver_status == 'ok'"
+                                      class="text-muted">
+                                    beräknad här
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'partial'"
+                                      class="text-warning">
+                                    delvis hämtad
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'auth_expired'"
+                                      class="text-danger">
+                                    anslutningen behöver förnyas
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'rate_limited'"
+                                      class="text-warning">
+                                    fördröjd (kvot)
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'unsupported'"
+                                      class="text-muted">
+                                    källan saknar underlag
+                                </span>
+                            </div>
+                            <div t-if="kpi_status == 'ok'" class="small text-muted">
+                                <field name="lowest_balance" widget="monetary"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Sökvyn: sortering på allvar och agenda är två olika frågor.
+
+         Anmärkning: risk_level, kpi_status och days_to_crisis är beräknade
+         och lagras inte, så de kan inte användas i en sökdomän. Filtren nedan
+         använder därför bara lagrade fält. Ett filter på "behöver
+         uppmärksamhet" kräver att vyn läser först — det görs i vyn, inte här. -->
+    <record id="view_liquidity_tenant_company_search" model="ir.ui.view">
+        <field name="name">liquidity.tenant.company.search</field>
+        <field name="model">liquidity.tenant.company</field>
+        <field name="arch" type="xml">
+            <search string="Liquidity">
+                <field name="name"/>
+                <field name="tenant_id"/>
+                <separator/>
+                <filter name="missing" string="No longer at the customer"
+                        domain="[('missing_since', '!=', False)]"/>
+                <filter name="hidden" string="Hidden" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="my_activities" string="My activities"
+                        domain="[('activity_ids.user_id', '=', uid)]"/>
+                <!-- #if VERSION <= "19.0" -->
+                <group expand="0" string="Group by">
+                <!-- #endif -->
+                    <filter name="group_tenant" string="Source"
+                            context="{'group_by': 'tenant_id'}"/>
+                <!-- #if VERSION <= "19.0" -->
+                </group>
+                <!-- #endif -->
+            </search>
+        </field>
+    </record>
+
+    <!-- Detaljvyn: Nivå 3, loginlänk och lokal chatter. -->
+    <record id="view_liquidity_tenant_company_form" model="ir.ui.view">
+        <field name="name">liquidity.tenant.company.form</field>
+        <field name="model">liquidity.tenant.company</field>
+        <field name="arch" type="xml">
+            <form string="Bookkeeping" create="false" delete="false">
+                <header>
+                    <button name="action_refresh" type="object" string="Refresh"
+                            class="btn-secondary"/>
+                    <field name="kpi_status" widget="statusbar" statusbar_visible="ok,stale"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3 class="text-muted"><field name="tenant_id" readonly="1"/></h3>
+                    </div>
+                    <group>
+                        <group string="Liquidity">
+                            <field name="risk_level" widget="badge"
+                                   decoration-danger="risk_level == 'danger'"
+                                   decoration-warning="risk_level == 'warning'"
+                                   decoration-success="risk_level == 'good'"/>
+                            <field name="days_to_crisis"/>
+                            <field name="crisis_kind"/>
+                            <field name="lowest_balance" widget="monetary"/>
+                            <field name="lowest_balance_date"/>
+                            <field name="opening_balance" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Source">
+                            <field name="company_ref" readonly="1"/>
+                            <field name="currency_name" readonly="1"/>
+                            <field name="computed_at"/>
+                            <field name="first_seen_at"/>
+                            <field name="last_seen_at"/>
+                            <field name="missing_since"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="kpi_message" readonly="1"
+                           invisible="not kpi_message"/>
+                    <div class="mt-2">
+                        <button name="action_load_curve" type="object"
+                                string="Load the 90-day curve"
+                                class="btn-secondary"
+                                help="Fetched on demand. The overview reads only the headline figures; the curve is one row per day and is not worth fetching for a screen nobody opened."/>
+                    </div>
+                    <group string="Verify at the customer"
+                           invisible="truth_kind != 'read' or not tenant_id">
+                        <div colspan="2">
+                            <p class="text-muted">
+                                These are the customer's own figures, read from
+                                their Odoo. Log in there to see the same numbers
+                                in their own screen — the link is a plain
+                                bookmark and carries no credential.
+                            </p>
+                            <field name="login_url" widget="url"
+                                   invisible="not login_url"/>
+                            <button name="action_open_at_customer" type="object"
+                                    string="Open at the customer"
+                                    class="btn-primary"
+                                    invisible="not bridge_available"
+                                    help="Opens the customer's own Odoo logged
+                                          in as you. The customer's access log
+                                          records who opened, when, and from
+                                          which firm."/>
+                            <field name="bridge_state" readonly="1"
+                                   invisible="bridge_available or not bridge_state"/>
+                        </div>
+                    </group>
+
+                    <!-- Driven source: the figures are derived here, so the
+                         honest offer is the underlag, not a login link into a
+                         system that is not Odoo. -->
+                    <group string="Driven source" invisible="truth_kind != 'derived'">
+                        <group>
+                            <field name="driver_status" widget="badge"
+                                   decoration-danger="driver_status in ('auth_expired', 'failed')"
+                                   decoration-warning="driver_status in ('partial', 'rate_limited', 'unsupported')"
+                                   decoration-success="driver_status == 'ok'"/>
+                            <field name="driver_message"
+                                   invisible="not driver_message"/>
+                            <field name="driver_unsupported"
+                                   invisible="not driver_unsupported"/>
+                            <field name="driver_currency_warning"
+                                   invisible="not driver_currency_warning"/>
+                        </group>
+                        <group>
+                            <field name="driver_cash_position" widget="monetary"/>
+                            <field name="driver_receivables_open" widget="monetary"/>
+                            <field name="driver_receivables_count"/>
+                            <field name="driver_payables_open" widget="monetary"/>
+                            <field name="driver_payables_count"/>
+                            <field name="driver_net_open" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <div class="mt-2" invisible="truth_kind != 'derived'">
+                        <p class="text-muted">
+                            These figures are calculated here, from the
+                            customer's own bookkeeping. They are not a screen in
+                            the customer's system — the requirement is that they
+                            can be derived from their entries, and the underlag
+                            below is the proof. A figure the source cannot carry
+                            is left out rather than shown as zero.
+                        </p>
+                        <field name="driver_derivation" readonly="1" nolabel="1"
+                               invisible="not driver_derivation"
+                               class="text-monospace small"/>
+                    </div>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_liquidity_tenant_company" model="ir.actions.act_window">
+        <field name="name">Liquidity</field>
+        <field name="res_model">liquidity.tenant.company</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_liquidity_tenant_company_search"/>
+        <field name="context">{'search_default_tenant_id': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No bookkeeping yet</p>
+            <p>Connect a source instance under Configuration, then import its companies.</p>
+        </field>
+    </record>
+
+</odoo>
