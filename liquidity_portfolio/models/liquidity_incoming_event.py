@@ -151,18 +151,23 @@ class LiquidityIncomingEvent(models.Model):
         help="What was missing: an unknown source, or a company the firm has "
              "not imported.",
     )
-    # Not a required outcome. A work order belongs to a plan the firm has sold
-    # to that customer, and an incoming question does not imply one exists.
-    # The reference is filled when a plan is there, and left empty otherwise --
-    # an event is not made to wait for a commercial relationship.
-    work_order_id = fields.Many2one(
-        "liquidity.work.order",
-        string="Work order",
-        readonly=True,
-        ondelete="set null",
-        help="Set when the bookkeeping has a plan the event could become work "
-             "on. Empty is normal: a question is not a sold service.",
-    )
+    # No ``work_order_id`` here, deliberately.
+    #
+    # A work order belongs to a plan the firm has sold, and the model lives in
+    # ``liquidity_work`` -- which this module does NOT depend on. A Many2one to
+    # a model outside the dependency graph is a latent crash: the field looks
+    # fine until something writes it, and then the registry has no such model.
+    # Tests would not catch it, because a test that never touches the field
+    # never resolves it.
+    #
+    # Making ``liquidity_work`` a dependency would force every firm using the
+    # read-only portfolio to install a work-order module it may not have bought.
+    # The reference therefore belongs in the module that owns both ends: when
+    # the event-to-work-order flow is built, it goes in a module that depends on
+    # ``liquidity_work`` and inherits this model.
+    #
+    # Until then the event says what it is and leaves the commercial
+    # relationship out of it -- a question is not a sold service.
 
     _sql_constraints = [
         (
