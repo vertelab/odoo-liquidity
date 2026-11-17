@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Liquidity Portfolio",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Accounting/Accounting",
     "summary": "One liquidity overview across many Odoo instances and companies",
     "description": """Liquidity Portfolio

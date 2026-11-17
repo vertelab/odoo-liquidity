@@ -11,6 +11,9 @@
                   decoration-success="state == 'ok'">
                 <field name="name"/>
                 <field name="source_type" widget="badge"/>
+                <field name="source" widget="badge"
+                       decoration-info="source == 'vertel'"
+                       decoration-warning="source == 'agency'"/>
                 <field name="base_url"/>
                 <field name="db_name"/>
                 <field name="login"/>
@@ -49,6 +52,9 @@
                     <group>
                         <group string="Connection">
                             <field name="source_type"/>
+                            <field name="source"/>
+                            <field name="owning_agency_id"
+                                   invisible="source != 'agency'"/>
                             <field name="base_url" placeholder="https://kund.vertel.se"/>
                             <field name="db_name" placeholder="databasnamn"
                                    invisible="source_type != 'odoo'"/>
@@ -58,12 +64,36 @@
                                    invisible="source_type != 'visma'"/>
                             <field name="keykeep_ref"
                                    placeholder="keykeep credential label"/>
+                            <field name="bridge_keykeep_ref"
+                                   placeholder="keykeep bridge key label"
+                                   invisible="source_type != 'odoo'"/>
                         </group>
                         <group string="Status">
                             <field name="last_connected_at"/>
                             <field name="liquidity_version"/>
                             <field name="request_timeout"/>
                         </group>
+                    </group>
+                    <group string="Accounts" colspan="2">
+                        <div colspan="2">
+                            <p class="text-muted">
+                                One account per consultant. A firm with eight
+                                consultants has eight rows here, not one shared
+                                login — the access log has to name a person.
+                            </p>
+                        </div>
+                        <field name="account_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="consultant_id"/>
+                                <field name="consultant_ref"/>
+                                <field name="login"/>
+                                <field name="keykeep_ref"/>
+                                <field name="is_agency_account"/>
+                                <field name="agency_partner_id"/>
+                                <field name="last_used_at" readonly="1"/>
+                                <field name="active"/>
+                            </list>
+                        </field>
                     </group>
                     <group string="Companies" colspan="2">
                         <field name="company_ids" nolabel="1" readonly="1">

@@ -249,11 +249,66 @@ another system*. That is a deliberate, documented shift; blending read and
 derived rows in one list without marking them would be the worst possible
 answer.
 
+#### One account per consultant
+
+Step 1 had one login and one API key per customer, and a firm with eight
+consultants shared them. That destroys the audit trail: the customer can no
+longer see *who* was in their books, only that someone was.
+
+`liquidity.tenant.account` fixes it — one row per consultant per source, each
+with its own keykeep credential:
+
+- the access log names a person, not just a firm,
+- revoking one consultant is one row, not a rotation of a shared key that
+  nobody dares do because it breaks everyone,
+- two accounts sharing one credential is refused by a constraint, because a
+  shared key is the defect this model exists to remove.
+
+`liquidity.tenant.source` records whether the customer is Vertel's or was
+brought in by an agency. Set at onboarding, never changed — the commission rule
+depends on it being unambiguous.
+
+Existing installations are migrated: each tenant's `login` becomes one account
+row with `is_agency_account=False`. The migration is idempotent, so a retried
+upgrade does not double the accounts.
+
+#### Opening the customer's system — `liquidity_bridge`
+
+Step 1 offers a login link, which is honest but means typing a password, and
+the customer's log then shows "someone from the firm". The bridge closes that:
+
+```
+firm                          customer's Odoo (liquidity_bridge)
+ |                                      |
+ |  POST /liquidity_bridge/request  ->  | validates the bridge key,
+ |                                      | issues a single-use token
+ |  <-  token + url                     |
+ |                                      |
+ browser -----------------------------> | GET /liquidity_bridge/open?t=...
+                                        | writes the access log FIRST,
+                                        | then opens the session
+```
+
+**No session without a log line.** The access log row is written before the
+session exists, in the same transaction. If the write fails the request fails.
+An unlogged session is exactly what the customer cannot forgive.
+
+The bridge is a separate module (`liquidity_bridge`), installed at the customer,
+with restrictive defaults: `enabled=0`, `allow_agency_accounts=0`,
+`allow_impersonation=0`. A bridge installed and forgotten must not be a bridge
+that grants access. The firm's button appears only when the customer's bridge
+answers and allows impersonation; otherwise the plain login link from step 1
+remains, because a button that cannot work is worse than no button.
+
+The three reasons a bridge is unusable are kept apart, because they need
+different actions: no bridge installed, switched off at the customer, or
+impersonation refused.
+
 #### Not yet
 
-Work orders, customer-initiated requests, mirrored chat and SSO/impersonation
-are separate changes. See `openspec/changes/portfolio-steg2-*` and
-`byra-*` in the planning repository.
+Mirrored chat and the customer-initiated work order flow are separate changes.
+See `openspec/changes/portfolio-steg2-kundbrygga` and `byra-provision` in the
+planning repository.
 
 ### `liquidity_work` — work orders from a product's plan (step 2, landed)
 

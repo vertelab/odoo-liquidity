@@ -218,6 +218,16 @@
                             </p>
                             <field name="login_url" widget="url"
                                    invisible="not login_url"/>
+                            <button name="action_open_at_customer" type="object"
+                                    string="Open at the customer"
+                                    class="btn-primary"
+                                    invisible="not bridge_available"
+                                    help="Opens the customer's own Odoo logged
+                                          in as you. The customer's access log
+                                          records who opened, when, and from
+                                          which firm."/>
+                            <field name="bridge_state" readonly="1"
+                                   invisible="bridge_available or not bridge_state"/>
                         </div>
                     </group>
 
