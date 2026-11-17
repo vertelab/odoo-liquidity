@@ -130,7 +130,7 @@ event markers in the OWL band, the per-day drill-down, the responsible-use
 text in the view, and the Zabbix `duration_ms` metric. None of them change the
 stored numbers.
 
-### `liquidity_portfolio` — one overview across many customers (step 1, landed)
+### `liquidity_portfolio` — one overview across many customers (step 1 + driven sources)
 
 An accounting firm with many Odoo customers has one question no single database
 can answer: *which client needs me today?* This module answers it.
@@ -139,11 +139,15 @@ can answer: *which client needs me today?* This module answers it.
 may hold four companies; the portfolio shows four rows, because that is what the
 firm actually works on.
 
-**Reading, never recomputing.** The source always has `liquidity_forecast`
-installed. This module reads its finished figures over JSON-RPC and shows them as
-they are. It does not compute a single KPI of its own — if the portfolio and the
-customer's own screen ever disagreed, the login link would prove the portfolio
-wrong.
+**Reading, never recomputing — for Odoo sources.** An Odoo source has
+`liquidity_forecast` installed. This module reads its finished figures over
+JSON-RPC and shows them as they are: it does not compute a single KPI of its own,
+because if the portfolio and the customer's own screen ever disagreed, the login
+link would prove the portfolio wrong.
+
+A Fortnox or Visma customer has no such module, and there the rule necessarily
+changes — see *Driven sources* below. The list marks which kind of row you are
+looking at, because the two are not the same kind of truth.
 
 **No cache.** No snapshot table, no nightly copy. Every figure is fetched when
 the view opens, in parallel, with a hard timeout per source.
@@ -186,11 +190,70 @@ Tests:
 checkmodule -d <db> -m liquidity_portfolio -t -l test --test-tags /liquidity_portfolio
 ```
 
-#### Not in step 1
+#### Driven sources — Fortnox and Visma
 
-Work orders, customer-initiated requests, mirrored chat, SSO/impersonation and
-Fortnox/Visma drivers are separate changes. See
-`openspec/changes/portfolio-steg2-*` in the planning repository.
+A firm's customers are often mostly in Fortnox or Visma, where no
+`liquidity_forecast` exists. There is nothing to be identical *to*, so the
+requirement changes — and that change has to be visible or the list quietly
+mixes two kinds of truth:
+
+| Row kind | What the figures are | How you verify them |
+|---|---|---|
+| `read` (Odoo) | the customer's own figures, read as they are | log in to their Odoo |
+| `derived` (driver) | computed here from the customer's bookkeeping | the entries they were computed from |
+
+The list carries a **Kind** column for exactly this reason. A derived row offers
+the underlag behind the figure, never a login link into a system that is not
+Odoo.
+
+**A driver fetches underlag, never KPIs.** `services/fortnox.py` and
+`services/visma.py` return balances, open receivables and payables with their
+dates; the arithmetic lives in `services/raw_data.py` so it can be tested
+against known underlag and shown with its workings.
+
+**`capabilities()` is the gate.** A source that does not expose invoice dates
+cannot support receivables ageing, and the honest answer is *stöds inte av
+källan* — never a zero, because a zero is a claim about the customer's money.
+
+Visma is several products with different APIs. The driver therefore takes a
+product profile per connection (`eekonomi`, `administration`), and a connection
+that has not declared one supports nothing rather than guessing.
+
+#### Three failure modes that must not be collapsed
+
+| Situation | Shown as |
+|---|---|
+| the source does not answer at all | *Svarar inte* |
+| the token expired or was revoked | *anslutningen behöver förnyas* |
+| the quota was reached (429) | *fördröjd (kvot)* — retried, not alarmed |
+| some sections answered, some failed | *delvis hämtad* + which part is missing |
+
+An expired token rendered as "not answering" sends the reader looking for a
+network problem that does not exist. A rate limit rendered as a failure turns a
+portfolio of any size into a wall of red the reader learns to ignore.
+
+#### Currency
+
+Stated once, in `services/raw_data.py` (`CURRENCY_PRINCIPLE`): amounts are
+counted in the source's own currency. **No conversion is done.** Converting
+needs a rate, a rate date and a rate source, and each of those changes the
+number — a portfolio that silently converts at today's rate produces a total
+that matches no document the customer has. A source reporting more than one
+currency is flagged on the row rather than summed across.
+
+#### The truth shift, stated plainly
+
+For a driven source the requirement is **"derivable from the customer's own
+bookkeeping, and shown with its underlag"** — not *identical to a screen in
+another system*. That is a deliberate, documented shift; blending read and
+derived rows in one list without marking them would be the worst possible
+answer.
+
+#### Not yet
+
+Work orders, customer-initiated requests, mirrored chat and SSO/impersonation
+are separate changes. See `openspec/changes/portfolio-steg2-*` and
+`byra-*` in the planning repository.
 
 ### `liquidity_work` — work orders from a product's plan (step 2, landed)
 

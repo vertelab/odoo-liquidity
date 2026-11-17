@@ -6,16 +6,17 @@
         <field name="model">liquidity.tenant</field>
         <field name="arch" type="xml">
             <list string="Source instances" create="true" delete="true"
-                  decoration-danger="state in ('error', 'auth_error')"
-                  decoration-warning="state == 'no_liquidity'"
+                  decoration-danger="state in ('error', 'auth_error', 'auth_expired')"
+                  decoration-warning="state in ('no_liquidity', 'rate_limited')"
                   decoration-success="state == 'ok'">
                 <field name="name"/>
+                <field name="source_type" widget="badge"/>
                 <field name="base_url"/>
                 <field name="db_name"/>
                 <field name="login"/>
                 <field name="state" widget="badge"
-                       decoration-danger="state in ('error', 'auth_error')"
-                       decoration-warning="state == 'no_liquidity'"
+                       decoration-danger="state in ('error', 'auth_error', 'auth_expired')"
+                       decoration-warning="state in ('no_liquidity', 'rate_limited')"
                        decoration-success="state == 'ok'"/>
                 <field name="company_count"/>
                 <field name="liquidity_version"/>
@@ -47,9 +48,14 @@
                     </div>
                     <group>
                         <group string="Connection">
+                            <field name="source_type"/>
                             <field name="base_url" placeholder="https://kund.vertel.se"/>
-                            <field name="db_name" placeholder="databasnamn"/>
-                            <field name="login" placeholder="odoouser@kund.se"/>
+                            <field name="db_name" placeholder="databasnamn"
+                                   invisible="source_type != 'odoo'"/>
+                            <field name="login" placeholder="odoouser@kund.se"
+                                   invisible="source_type != 'odoo'"/>
+                            <field name="visma_product"
+                                   invisible="source_type != 'visma'"/>
                             <field name="keykeep_ref"
                                    placeholder="keykeep credential label"/>
                         </group>
@@ -72,6 +78,22 @@
                     </group>
                     <field name="last_error" readonly="1"
                            invisible="not last_error"/>
+                    <div class="alert alert-info" role="alert"
+                         invisible="source_type == 'odoo'">
+                        <p><strong>A driven source is not the same kind of truth.</strong></p>
+                        <p class="mb-0">
+                            An Odoo source has <code>liquidity_forecast</code>
+                            installed and its figures are read as they are. A
+                            Fortnox or Visma source has no such module: the
+                            portfolio fetches underlag and derives the figures
+                            itself. The requirement for those rows is that the
+                            figures can be derived from the customer's own
+                            bookkeeping — not that they match a screen in
+                            another system. The list marks the difference, and a
+                            figure the source cannot carry is left out rather
+                            than shown as zero.
+                        </p>
+                    </div>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>

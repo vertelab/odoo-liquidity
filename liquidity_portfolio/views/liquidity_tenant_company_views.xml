@@ -10,12 +10,17 @@
         <field name="model">liquidity.tenant.company</field>
         <field name="arch" type="xml">
             <list string="Liquidity" create="false" delete="false"
-                  decoration-danger="kpi_status == 'ok' and risk_level == 'danger'"
-                  decoration-warning="kpi_status == 'ok' and risk_level == 'warning'"
-                  decoration-success="kpi_status == 'ok' and risk_level == 'good'"
-                  decoration-muted="kpi_status in ('unreachable', 'no_forecast') or missing_since">
+                  decoration-danger="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'danger'"
+                  decoration-warning="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'warning'"
+                  decoration-success="truth_kind == 'read' and kpi_status == 'ok' and risk_level == 'good'"
+                  decoration-muted="(truth_kind == 'read' and kpi_status in ('unreachable', 'no_forecast')) or (truth_kind == 'derived' and driver_status in ('unsupported', 'failed')) or missing_since">
                 <field name="name" string="Bookkeeping"/>
                 <field name="tenant_id" string="Source"/>
+                <!-- Kind of truth, always visible: a derived row must never be
+                     read as if it were the customer's own figure. -->
+                <field name="truth_kind" widget="badge" string="Kind"
+                       decoration-info="truth_kind == 'read'"
+                       decoration-warning="truth_kind == 'derived'"/>
                 <field name="risk_level" widget="badge"
                        decoration-danger="risk_level == 'danger'"
                        decoration-warning="risk_level == 'warning'"
@@ -35,6 +40,24 @@
                        decoration-warning="kpi_status in ('draft', 'no_forecast', 'stale')"
                        decoration-success="kpi_status == 'ok'"/>
                 <field name="kpi_message" string="Message" optional="hide"/>
+                <!-- Driven rows: derived figures, status and what is missing. -->
+                <field name="driver_status" widget="badge" string="Fetch"
+                       optional="show"
+                       decoration-danger="driver_status in ('auth_expired', 'failed')"
+                       decoration-warning="driver_status in ('partial', 'rate_limited', 'unsupported')"
+                       decoration-success="driver_status == 'ok'"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_message" string="Missing" optional="show"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_cash_position" widget="monetary"
+                       string="Cash" optional="show"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_receivables_open" widget="monetary"
+                       string="Receivables" optional="hide"
+                       invisible="truth_kind != 'derived'"/>
+                <field name="driver_payables_open" widget="monetary"
+                       string="Payables" optional="hide"
+                       invisible="truth_kind != 'derived'"/>
                 <field name="missing_since" optional="hide"/>
                 <field name="active" optional="hide"/>
             </list>
@@ -75,6 +98,28 @@
                                 </span>
                                 <span t-if="kpi_status == 'auth_error'" class="text-danger">
                                     Key refused
+                                </span>
+                                <!-- Driven rows: the three states that must
+                                     never be collapsed into "no answer". -->
+                                <span t-if="truth_kind == 'derived' and driver_status == 'ok'"
+                                      class="text-muted">
+                                    beräknad här
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'partial'"
+                                      class="text-warning">
+                                    delvis hämtad
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'auth_expired'"
+                                      class="text-danger">
+                                    anslutningen behöver förnyas
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'rate_limited'"
+                                      class="text-warning">
+                                    fördröjd (kvot)
+                                </span>
+                                <span t-if="truth_kind == 'derived' and driver_status == 'unsupported'"
+                                      class="text-muted">
+                                    källan saknar underlag
                                 </span>
                             </div>
                             <div t-if="kpi_status == 'ok'" class="small text-muted">
@@ -162,7 +207,8 @@
                                 class="btn-secondary"
                                 help="Fetched on demand. The overview reads only the headline figures; the curve is one row per day and is not worth fetching for a screen nobody opened."/>
                     </div>
-                    <group string="Verify at the customer" invisible="not tenant_id">
+                    <group string="Verify at the customer"
+                           invisible="truth_kind != 'read' or not tenant_id">
                         <div colspan="2">
                             <p class="text-muted">
                                 These are the customer's own figures, read from
@@ -174,6 +220,46 @@
                                    invisible="not login_url"/>
                         </div>
                     </group>
+
+                    <!-- Driven source: the figures are derived here, so the
+                         honest offer is the underlag, not a login link into a
+                         system that is not Odoo. -->
+                    <group string="Driven source" invisible="truth_kind != 'derived'">
+                        <group>
+                            <field name="driver_status" widget="badge"
+                                   decoration-danger="driver_status in ('auth_expired', 'failed')"
+                                   decoration-warning="driver_status in ('partial', 'rate_limited', 'unsupported')"
+                                   decoration-success="driver_status == 'ok'"/>
+                            <field name="driver_message"
+                                   invisible="not driver_message"/>
+                            <field name="driver_unsupported"
+                                   invisible="not driver_unsupported"/>
+                            <field name="driver_currency_warning"
+                                   invisible="not driver_currency_warning"/>
+                        </group>
+                        <group>
+                            <field name="driver_cash_position" widget="monetary"/>
+                            <field name="driver_receivables_open" widget="monetary"/>
+                            <field name="driver_receivables_count"/>
+                            <field name="driver_payables_open" widget="monetary"/>
+                            <field name="driver_payables_count"/>
+                            <field name="driver_net_open" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <div class="mt-2" invisible="truth_kind != 'derived'">
+                        <p class="text-muted">
+                            These figures are calculated here, from the
+                            customer's own bookkeeping. They are not a screen in
+                            the customer's system — the requirement is that they
+                            can be derived from their entries, and the underlag
+                            below is the proof. A figure the source cannot carry
+                            is left out rather than shown as zero.
+                        </p>
+                        <field name="driver_derivation" readonly="1" nolabel="1"
+                               invisible="not driver_derivation"
+                               class="text-monospace small"/>
+                    </div>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
