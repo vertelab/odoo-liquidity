@@ -694,6 +694,35 @@ class LiquidityTenant(models.Model):
                               "their system"}
         return {"available": True, "reason": ""}
 
+    def _provision_agency_account(self, login, consultant_ref=None):
+        """Create an agency account at the customer. Returns {'ok', 'reason'}.
+
+        The firm's side of the provisioning. Deliberately sends nothing but a
+        login and a reference: the customer's bridge decides the group, and
+        the firm cannot ask for more even if it wanted to.
+        """
+        self.ensure_one()
+        result = self._bridge_call(
+            "/liquidity_bridge/account/provision",
+            payload={"login": login, "consultant_ref": consultant_ref or ""},
+            method="POST",
+        )
+        if not result["ok"]:
+            return {"ok": False, "reason": result["reason"]}
+        return {"ok": True, "reason": ""}
+
+    def _deactivate_agency_account(self, login):
+        """Archive an agency account at the customer."""
+        self.ensure_one()
+        result = self._bridge_call(
+            "/liquidity_bridge/account/deactivate",
+            payload={"login": login},
+            method="POST",
+        )
+        if not result["ok"]:
+            return {"ok": False, "reason": result["reason"]}
+        return {"ok": True, "reason": ""}
+
     def _request_bridge_session(self, company_ref=None, menu_xmlid=None):
         """Ask for a token. Returns {'url': ..., 'reason': ...}."""
         self.ensure_one()

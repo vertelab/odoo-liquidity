@@ -152,3 +152,138 @@ class TestCustomerSource(TransactionCase):
             "source": "agency", "owning_agency_id": agency.id,
         })
         self.assertEqual(tenant.owning_agency_id, agency)
+
+
+@tagged("post_install", "-at_install")
+class TestAgencyProvisioning(TransactionCase):
+    """The firm's side of provisioning: what it sends, and what it does not."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tenant = cls.env["liquidity.tenant"].create({
+            "name": "Provisioneringskund",
+            "base_url": "https://prov.test",
+            "db_name": "prov",
+            "login": "byra@prov.test",
+            "bridge_keykeep_ref": "prov-bridge-key",
+        })
+
+    def test_provisioning_sends_only_a_login_and_a_reference(self):
+        """The signature is the threat model: what is not sent cannot be asked for."""
+        from unittest.mock import patch
+        captured = {}
+
+        def fake_call(self, path, payload=None, method="GET"):
+            captured["path"] = path
+            captured["payload"] = payload
+            return {"ok": True, "data": {"status": "created"}}
+
+        with patch.object(type(self.tenant), "_bridge_call", fake_call):
+            result = self.tenant._provision_agency_account(
+                "konsult@byra.test", consultant_ref="k-1"
+            )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(captured["path"], "/liquidity_bridge/account/provision")
+        self.assertEqual(
+            set(captured["payload"]), {"login", "consultant_ref"},
+            "The provisioning call must carry no group, no password and no "
+            "rights: the customer's bridge decides the group.",
+        )
+
+    def test_a_refusal_is_reported_not_raised_as_success(self):
+        from unittest.mock import patch
+
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": False, "reason": "already exists"},
+        ):
+            result = self.tenant._provision_agency_account("x@y.test")
+
+        self.assertFalse(result["ok"])
+        self.assertIn("already exists", result["reason"])
+
+    def test_provisioning_marks_the_account_as_created_at_the_customer(self):
+        from unittest.mock import patch
+        account = self.env["liquidity.tenant.account"].create({
+            "tenant_id": self.tenant.id,
+            "login": "konsult2@byra.test",
+            "keykeep_ref": "prov-k2",
+        })
+        self.assertFalse(account.provisioned_by_bridge)
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": True, "data": {}},
+        ):
+            account.action_provision_at_customer()
+        self.assertTrue(account.provisioned_by_bridge)
+
+    def test_a_refused_provisioning_raises_with_the_reason(self):
+        from unittest.mock import patch
+        from odoo.exceptions import ValidationError
+        account = self.env["liquidity.tenant.account"].create({
+            "tenant_id": self.tenant.id,
+            "login": "konsult3@byra.test",
+            "keykeep_ref": "prov-k3",
+        })
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": False, "reason": "agency accounts are off"},
+        ):
+            with self.assertRaises(ValidationError) as raised:
+                account.action_provision_at_customer()
+        self.assertIn("agency accounts are off", str(raised.exception))
+
+    def test_revoking_a_bridged_account_also_deactivates_it_at_the_customer(self):
+        """A local revoke that leaves a working login behind is the worst of
+        both worlds."""
+        from unittest.mock import patch
+        account = self.env["liquidity.tenant.account"].create({
+            "tenant_id": self.tenant.id,
+            "login": "konsult4@byra.test",
+            "keykeep_ref": "prov-k4",
+        })
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": True, "data": {}},
+        ):
+            account.action_provision_at_customer()
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": True, "data": {}},
+        ) as mocked:
+            account.action_revoke()
+            self.assertTrue(mocked.called, "the customer must be told")
+        self.assertFalse(account.active)
+
+    def test_a_failed_remote_deactivation_is_recorded_not_hidden(self):
+        from unittest.mock import patch
+        account = self.env["liquidity.tenant.account"].create({
+            "tenant_id": self.tenant.id,
+            "login": "konsult5@byra.test",
+            "keykeep_ref": "prov-k5",
+            "provisioned_by_bridge": True,
+        })
+        with patch.object(
+            type(self.tenant), "_bridge_call",
+            return_value={"ok": False, "reason": "the bridge did not answer"},
+        ):
+            account.action_revoke()
+        self.assertFalse(account.active)
+        self.assertIn("could not be deactivated", account.bridge_note)
+
+    def test_a_driven_source_has_no_users_to_provision(self):
+        from odoo.exceptions import ValidationError
+        fortnox = self.env["liquidity.tenant"].create({
+            "name": "Fortnoxkund",
+            "base_url": "https://fx.test",
+            "source_type": "fortnox",
+        })
+        account = self.env["liquidity.tenant.account"].create({
+            "tenant_id": fortnox.id,
+            "login": "konsult@byra.test",
+            "keykeep_ref": "fx-k1",
+        })
+        with self.assertRaises(ValidationError):
+            account.action_provision_at_customer()

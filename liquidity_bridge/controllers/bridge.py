@@ -24,6 +24,7 @@ import json
 import logging
 
 from odoo import http
+from odoo.exceptions import AccessError
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -109,6 +110,82 @@ class LiquidityBridgeController(http.Controller):
             "res_id": payload.get("res_id") or 0,
         })
         return _json({"status": "stored", "id": row.id}, status=201)
+
+    # -- agency accounts ---------------------------------------------------
+
+    @http.route("/liquidity_bridge/account/provision", type="http", auth="none",
+                methods=["POST"], csrf=False)
+    def provision_account(self, **kwargs):
+        """Create an agency account at this customer.
+
+        Deliberately has no parameter for groups, passwords or rights: the
+        only inputs are a login and an optional consultant reference. That is
+        the threat model's rule 1 expressed as a signature -- what cannot be
+        passed cannot be escalated.
+        """
+        ok, response = _authorised()
+        if not ok:
+            return response
+
+        config = _config()
+        if not config.allows_agency_accounts():
+            return _json(
+                {"error": "agency_accounts_disabled",
+                 "message": "this customer does not allow agency accounts"},
+                status=403,
+            )
+
+        try:
+            payload = json.loads(request.httprequest.get_data(as_text=True) or "{}")
+        except ValueError:
+            return _json({"error": "bad_json"}, status=400)
+
+        login = payload.get("login")
+        if not login:
+            return _json({"error": "missing_login"}, status=400)
+
+        try:
+            record = request.env["bridge.agency.account"].sudo().provision(
+                login, consultant_ref=payload.get("consultant_ref")
+            )
+        except AccessError as exc:
+            # The message is the useful part: "already exists" versus "not
+            # allowed" leads to different actions at the firm.
+            return _json({"error": "refused", "message": str(exc)}, status=403)
+
+        return _json({
+            "status": "created",
+            "id": record.id,
+            "login": record.login,
+        }, status=201)
+
+    @http.route("/liquidity_bridge/account/deactivate", type="http", auth="none",
+                methods=["POST"], csrf=False)
+    def deactivate_account(self, **kwargs):
+        """Archive an agency account. Kept, so the access log still resolves."""
+        ok, response = _authorised()
+        if not ok:
+            return response
+
+        try:
+            payload = json.loads(request.httprequest.get_data(as_text=True) or "{}")
+        except ValueError:
+            return _json({"error": "bad_json"}, status=400)
+
+        login = payload.get("login")
+        if not login:
+            return _json({"error": "missing_login"}, status=400)
+
+        Account = request.env["bridge.agency.account"].sudo()
+        account = Account.search([("login", "=", login), ("active", "=", True)],
+                                 limit=1)
+        if not account:
+            # Not an error the firm can fix: the account is already gone or was
+            # never here. Answer 200 so a retry loop stops.
+            return _json({"status": "not_found"}, status=200)
+
+        account.action_deactivate()
+        return _json({"status": "deactivated", "login": login})
 
     # -- incoming chat message ---------------------------------------------
 

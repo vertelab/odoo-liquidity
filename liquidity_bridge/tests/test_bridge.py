@@ -385,3 +385,203 @@ class TestMirroredChat(TransactionCase):
             "The mirrored channel must live at the customer, not on the "
             "portfolio row where step 1's private notes are.",
         )
+
+
+@tagged("post_install", "-at_install")
+class TestAgencyAccountProvisioning(TransactionCase):
+    """3.1-3.3, 3.5-3.6: provisioning, with the threat model asserted.
+
+    Each test corresponds to one way this permission could be abused. They are
+    the reason the permission is allowed to exist at all.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.enabled", "1"
+        )
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.allow_agency_accounts", "1"
+        )
+        cls.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.agency_name", "Testbyrån AB"
+        )
+        cls.group = cls.env.ref("liquidity_bridge.group_agency_consultant")
+
+    def _provision(self, login):
+        return self.env["bridge.agency.account"].provision(login)
+
+    # -- rule 5: the customer must have agreed ----------------------------
+
+    def test_provisioning_refused_when_agency_accounts_are_off(self):
+        from odoo.exceptions import AccessError
+        self.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.allow_agency_accounts", "0"
+        )
+        with self.assertRaises(AccessError):
+            self._provision("konsult@byra.test")
+
+    def test_provisioning_refused_when_the_bridge_is_off(self):
+        from odoo.exceptions import AccessError
+        self.env["ir.config_parameter"].sudo().set_param(
+            "liquidity_bridge.enabled", "0"
+        )
+        with self.assertRaises(AccessError):
+            self._provision("konsult2@byra.test")
+
+    # -- rule 1: no more rights than agreed -------------------------------
+
+    def _groups_of(self, user):
+        """Read the relation table: ``groups_id`` is filtered per calling user."""
+        self.env.cr.execute(
+            "SELECT gid FROM res_groups_users_rel WHERE uid = %s", (user.id,)
+        )
+        return {row[0] for row in self.env.cr.fetchall()}
+
+    def test_the_created_user_has_the_agency_group(self):
+        record = self._provision("konsult3@byra.test")
+        self.assertIn(
+            self.group.id, self._groups_of(record.user_id),
+            "An agency account must carry the agency group. The groups that "
+            "group implies are the agreed rights, not stray ones.",
+        )
+
+    def test_the_created_user_has_no_group_outside_the_agency_hierarchy(self):
+        """What must never happen: an explicit group nobody agreed to.
+
+        The agency group's own implications are fine -- they are the rights the
+        customer agreed to when the group was defined. User administration and
+        settings are not.
+        """
+        record = self._provision("konsult3b@byra.test")
+        actual = self._groups_of(record.user_id)
+        forbidden = {
+            self.env.ref("base.group_system").id,
+            self.env.ref("base.group_erp_manager").id,
+        }
+        self.assertFalse(
+            actual & forbidden,
+            "An agency account must not be an administrator at the customer.",
+        )
+
+    def test_the_agency_group_grants_accounting_and_not_administration(self):
+        """2.2: accounting rights, without user administration or settings."""
+        admin = self.env.ref("base.group_system")
+        self.assertNotIn(admin, self.group.implied_ids | self.group)
+        self.assertTrue(
+            self.env.ref("account.group_account_user")
+            in self.group.implied_ids,
+            "The consultant needs to bookkeep, which is the point of the "
+            "account.",
+        )
+
+    def test_the_provisioning_call_cannot_be_steered_to_another_group(self):
+        """3.6: the endpoint has no group parameter, and the model refuses one.
+
+        This is the test that keeps the signature honest: if someone later adds
+        a ``groups`` argument, this fails.
+        """
+        import inspect
+        signature = inspect.signature(
+            type(self.env["bridge.agency.account"]).provision
+        )
+        parameters = set(signature.parameters)
+        for forbidden in ("groups", "groups_id", "group", "rights", "admin"):
+            self.assertNotIn(
+                forbidden, parameters,
+                "provision() must not accept a group: what cannot be passed "
+                "cannot be escalated.",
+            )
+
+    # -- rule 2: no password ----------------------------------------------
+
+    def test_the_created_user_has_no_password(self):
+        record = self._provision("konsult4@byra.test")
+        self.assertFalse(
+            record.user_id.password,
+            "An agency account has no password: it is reachable only through "
+            "the bridge's single-use token. Nothing to guess, phish or reset.",
+        )
+
+    # -- rule 3: never adopt an existing user -----------------------------
+
+    def test_an_existing_login_is_refused_not_adopted(self):
+        """3.3: creating and adopting look the same at the firm and are
+        completely different at the customer -- adoption is a takeover."""
+        from odoo.exceptions import AccessError
+        self.env["res.users"].create({
+            "name": "Befintlig Kundanvändare",
+            "login": "befintlig@kund.test",
+        })
+        with self.assertRaises(AccessError) as raised:
+            self._provision("befintlig@kund.test")
+        self.assertIn("already exists", str(raised.exception))
+
+    def test_an_archived_existing_login_is_also_refused(self):
+        """An archived user still owns its history; adopting it is still a
+        takeover."""
+        from odoo.exceptions import AccessError
+        user = self.env["res.users"].create({
+            "name": "Arkiverad", "login": "arkiverad@kund.test",
+        })
+        user.write({"active": False})
+        with self.assertRaises(AccessError):
+            self._provision("arkiverad@kund.test")
+
+    # -- rule 4: deactivation keeps the record ----------------------------
+
+    def test_deactivation_archives_the_user_and_keeps_the_record(self):
+        record = self._provision("konsult5@byra.test")
+        record.action_deactivate()
+        self.assertFalse(record.user_id.active)
+        self.assertFalse(record.active)
+        self.assertTrue(record.deactivated_at)
+        self.assertTrue(
+            record.exists(),
+            "The record stays so the access log still resolves to a name after "
+            "the consultant left.",
+        )
+
+    def test_deactivation_is_logged(self):
+        record = self._provision("konsult6@byra.test")
+        before = self.env["bridge.access.log"].search_count([])
+        record.action_deactivate()
+        self.assertEqual(self.env["bridge.access.log"].search_count([]), before + 1)
+
+    # -- the provisioning itself ------------------------------------------
+
+    def test_provisioning_records_who_and_when(self):
+        record = self._provision("konsult7@byra.test")
+        self.assertEqual(record.agency, "Testbyrån AB")
+        self.assertTrue(record.created_at)
+
+    def test_provisioning_is_logged_as_granted(self):
+        record = self._provision("konsult8@byra.test")
+        log = self.env["bridge.access.log"].search(
+            [("user_id", "=", record.user_id.id)], limit=1
+        )
+        self.assertEqual(log.outcome, "granted")
+        self.assertIn("provisioned", log.reason)
+
+    def test_the_same_login_cannot_be_provisioned_twice(self):
+        self._provision("konsult9@byra.test")
+        from odoo.exceptions import AccessError
+        with self.assertRaises(AccessError):
+            self._provision("konsult9@byra.test")
+
+    def test_a_missing_agency_group_is_a_failure_not_a_repair(self):
+        """An account without the agency group must fail loudly.
+
+        Repairing it would hide the real question: why did the group not
+        apply? An escalation attempt is worth a loud failure, not a quiet fix.
+        """
+        from odoo.exceptions import AccessError
+        record = self._provision("konsult10@byra.test")
+        record.user_id.sudo().write({
+            "groups_id": [(3, self.group.id)],
+        })
+        with self.assertRaises(AccessError):
+            self.env["bridge.agency.account"]._assert_only_agency_group(
+                record.user_id, self.group
+            )

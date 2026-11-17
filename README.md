@@ -334,9 +334,34 @@ stored compute would silently go stale at the first agreement.
 
 The agreement computes the basis. It does not invoice and does not pay out.
 
+#### Agency accounts — the one permission that creates users
+
+Everything else the firm can do is read, or open a session as an account that
+already exists. Provisioning **creates users** in the customer's Odoo. That is
+the narrowest and most dangerous permission in the model, so it comes with a
+threat model rather than an apology.
+
+| Risk | What stops it |
+|---|---|
+| The firm creates an account with more rights than agreed | The endpoint has **no parameter for groups**. An account is put in `group_agency_consultant` and nothing else. A test asserts the signature has no group argument — what cannot be passed cannot be escalated. |
+| The firm gives the account a password and logs in with it | A created account has **no password**. It is reachable only through the bridge's single-use token. Nothing to guess, phish or reset. |
+| The firm takes over an existing customer user | The endpoint **refuses a login that already exists**, including archived ones. It creates or it refuses; it never adopts. |
+| The firm keeps an account after the consultant left | Deactivation archives the user and keeps the record, so the access log still resolves to a name. |
+| The customer did not agree | `allow_agency_accounts` defaults to **0**, and every endpoint checks it. |
+| A local revoke leaves a working login behind | Revoking a bridged account also deactivates it at the customer; a failure there is recorded in `bridge_note`, not hidden. |
+
+The group's *implied* groups are the agreed rights — Odoo applies them, and
+they are not stray. What is asserted is that the account carries the agency
+group and is not an administrator.
+
+Deliberately absent: no password reset, no email invitation, no group
+selection, no adopting an existing user, and no ability to list or modify users
+the bridge did not create.
+
 #### Not yet
 
-Mirrored chat and the customer-initiated work order flow are separate changes.
+The customer-initiated work order flow (an event becoming a work order) is
+separate: an incoming question does not imply a sold plan.
 See `openspec/changes/portfolio-steg2-kundbrygga` and `byra-provision` in the
 planning repository.
 

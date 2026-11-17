@@ -9,5 +9,16 @@
             <field name="category_id" ref="base.module_category_accounting"/>
             <field name="implied_ids" eval="[(4, ref('account.group_account_manager'))]"/>
         </record>
+        <!-- The one group an agency account may belong to. Accounting rights
+             only: no HR, no payroll, no settings, no user administration.
+             Created here rather than by the customer, so that every customer
+             grants the same thing and the firm can reason about it once. -->
+        <record id="group_agency_consultant" model="res.groups">
+            <field name="name">Liquidity Bridge / Agency consultant</field>
+            <field name="category_id" ref="base.module_category_accounting"/>
+            <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+            <field name="comment">Granted to consultants the accounting firm's
+                                  bridge creates. Accounting rights only.</field>
+        </record>
     </data>
 </odoo>

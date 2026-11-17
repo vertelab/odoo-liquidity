@@ -83,6 +83,19 @@ class LiquidityTenantAccount(models.Model):
         help="Untick to revoke. The row and its history are kept, so the "
              "access log still resolves to a name after the consultant left.",
     )
+    provisioned_by_bridge = fields.Boolean(
+        string="Created at the customer",
+        readonly=True,
+        help="True when the bridge created the user at the customer. Revoking "
+             "this row then archives that user too -- leaving a working login "
+             "behind would be the worst of both worlds.",
+    )
+    bridge_note = fields.Char(
+        string="Bridge note",
+        readonly=True,
+        help="Set when a bridge call failed. A local state change that did not "
+             "reach the customer is recorded rather than assumed.",
+    )
     last_used_at = fields.Datetime(
         string="Last used",
         readonly=True,
@@ -128,6 +141,42 @@ class LiquidityTenantAccount(models.Model):
                 )
 
     def action_revoke(self):
-        """Retire the account. Kept, not deleted: the log must still resolve."""
-        self.write({"active": False})
+        """Retire the account. Kept, not deleted: the log must still resolve.
+
+        When the account was provisioned through the bridge, the user at the
+        customer is archived too -- otherwise revoking here would leave a
+        working login behind, which is the worst of both worlds.
+        """
+        for account in self:
+            if account.provisioned_by_bridge and account.tenant_id.source_type == "odoo":
+                result = account.tenant_id._deactivate_agency_account(account.login)
+                if not result["ok"]:
+                    # Do not pretend: the local row is marked inactive, but the
+                    # failure is recorded so somebody can finish the job.
+                    account.write({
+                        "active": False,
+                        "bridge_note": _(
+                            "The account at the customer could not be "
+                            "deactivated: %s", result["reason"]
+                        ),
+                    })
+                    continue
+            account.write({"active": False})
+        return True
+
+    def action_provision_at_customer(self):
+        """Create this account as a user at the customer, through the bridge."""
+        self.ensure_one()
+        if self.tenant_id.source_type != "odoo":
+            raise ValidationError(
+                _("Only an Odoo source has users to provision.")
+            )
+        result = self.tenant_id._provision_agency_account(
+            self.login, consultant_ref=self.consultant_ref
+        )
+        if not result["ok"]:
+            raise ValidationError(
+                _("The customer refused: %s", result["reason"])
+            )
+        self.write({"provisioned_by_bridge": True, "bridge_note": False})
         return True

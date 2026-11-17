@@ -90,6 +90,8 @@
                                 <field name="keykeep_ref"/>
                                 <field name="is_agency_account"/>
                                 <field name="agency_partner_id"/>
+                                <field name="provisioned_by_bridge"/>
+                                <field name="bridge_note" readonly="1"/>
                                 <field name="last_used_at" readonly="1"/>
                                 <field name="active"/>
                             </list>
