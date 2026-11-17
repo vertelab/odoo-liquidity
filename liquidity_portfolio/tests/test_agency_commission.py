@@ -221,3 +221,87 @@ class TestCustomerSourceIsFixed(TransactionCase):
         })
         tenant.write({"source": "vertel", "name": "Samma Källa AB"})
         self.assertEqual(tenant.source, "vertel")
+
+
+@tagged("post_install", "-at_install")
+class TestCommissionBasis(TransactionCase):
+    """6.3: the basis agrees with the agreement's own rules, and says why."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.agency = cls.env["res.partner"].create({"name": "Basbyrån AB"})
+
+    def _tenant(self, name, source="agency"):
+        return self.env["liquidity.tenant"].create({
+            "name": name,
+            "base_url": "https://%s.test" % name.lower().replace(" ", "-"),
+            "db_name": name.lower().replace(" ", "_"),
+            "login": "b@%s.test" % name.lower().replace(" ", "-"),
+            "source": source,
+        })
+
+    def _agreement(self, tenant, state="active", brought_in=None):
+        agreement = self.env["liquidity.agency.agreement"].create({
+            "agency_partner_id": self.agency.id,
+            "tenant_id": tenant.id,
+            "brought_in_at": brought_in or date(2026, 1, 1),
+        })
+        if state == "active":
+            agreement.action_activate()
+        return agreement
+
+    def test_the_basis_total_matches_the_agreement_methods(self):
+        """The report must not compute a number the agreement would not."""
+        tenant = self._tenant("Bas Kund")
+        agreement = self._agreement(tenant)
+        rows = agreement._build_basis(date(2026, 1, 1), date(2026, 1, 31), 10000.0)
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        self.assertAlmostEqual(
+            row["signup_amount"],
+            agreement._compute_signup_commission(10000.0),
+        )
+        self.assertAlmostEqual(
+            row["total_amount"],
+            row["signup_amount"] + row["recurring_amount"],
+        )
+
+    def test_a_vertel_customer_shows_zero_and_says_why(self):
+        tenant = self._tenant("Bas Vertel", source="vertel")
+        agreement = self._agreement(tenant)
+        row = agreement._build_basis(date(2026, 1, 1), date(2026, 1, 31), 10000.0)[0]
+        self.assertEqual(row["total_amount"], 0.0)
+        self.assertIn("Vertel", row["reason"],
+                      "A zero without a reason is a zero nobody can check.")
+
+    def test_the_reason_names_the_rate_and_the_base(self):
+        """6.2: the basis shows the ground, not just the amount."""
+        tenant = self._tenant("Bas Grund")
+        agreement = self._agreement(tenant)
+        row = agreement._build_basis(date(2026, 1, 1), date(2026, 1, 31), 12000.0)[0]
+        self.assertIn("30", row["reason"])
+        self.assertIn("12000", row["reason"])
+
+    def test_an_ended_agreement_shows_zero_with_its_state(self):
+        tenant = self._tenant("Bas Avslutad")
+        agreement = self._agreement(tenant)
+        agreement.write({"state": "ended"})
+        row = agreement._build_basis(date(2026, 1, 1), date(2026, 1, 31), 10000.0)[0]
+        self.assertEqual(row["total_amount"], 0.0)
+        self.assertIn("ended", row["reason"])
+
+    def test_the_wizard_builds_rows_for_every_agreement(self):
+        for index in range(3):
+            self._agreement(self._tenant("Bas %s" % index))
+        wizard = self.env["liquidity.agency.basis.wizard"].create({
+            "period_start": date(2026, 1, 1),
+            "period_end": date(2026, 1, 31),
+            "base_amount": 10000.0,
+        })
+        action = wizard.action_build()
+        self.assertEqual(action["res_model"], "liquidity.agency.commission.basis")
+        count = self.env["liquidity.agency.commission.basis"].search_count(
+            action["domain"]
+        )
+        self.assertEqual(count, 3)

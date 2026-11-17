@@ -19,6 +19,18 @@
               sequence="90"
               groups="group_liquidity_portfolio_manager"/>
 
+    <menuitem id="menu_liquidity_agency_agreement"
+              name="Agency agreements"
+              parent="menu_liquidity_portfolio_config"
+              action="action_liquidity_agency_agreement"
+              sequence="20"/>
+
+    <menuitem id="menu_liquidity_agency_basis"
+              name="Commission basis"
+              parent="menu_liquidity_portfolio_config"
+              action="action_liquidity_agency_basis_wizard"
+              sequence="30"/>
+
     <menuitem id="menu_liquidity_portfolio_sources"
               name="Sources"
               parent="menu_liquidity_portfolio_config"

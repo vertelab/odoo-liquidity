@@ -122,10 +122,4 @@
         </field>
     </record>
 
-    <menuitem id="menu_liquidity_agency_agreement"
-              name="Agency agreements"
-              parent="menu_liquidity_portfolio_config"
-              action="action_liquidity_agency_agreement"
-              sequence="20"/>
-
 </odoo>

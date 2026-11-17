@@ -107,6 +107,7 @@ calls read methods, but the key itself is as broad as the user it belongs to.
         "data/ir_cron.xml",
         "views/liquidity_tenant_views.xml",
         "views/liquidity_agency_agreement_views.xml",
+        "views/liquidity_agency_commission_basis_views.xml",
         "views/liquidity_tenant_company_views.xml",
         "views/menus.xml",
     ],
