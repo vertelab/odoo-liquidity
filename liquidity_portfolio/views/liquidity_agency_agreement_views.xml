@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_liquidity_agency_agreement_list" model="ir.ui.view">
+        <field name="name">liquidity.agency.agreement.list</field>
+        <field name="model">liquidity.agency.agreement</field>
+        <field name="arch" type="xml">
+            <list string="Agency agreements"
+                  decoration-muted="state == 'ended'"
+                  decoration-warning="state == 'ending'"
+                  decoration-danger="source != 'agency'">
+                <field name="agency_partner_id"/>
+                <field name="tenant_id"/>
+                <field name="source" widget="badge"
+                       decoration-info="source == 'vertel'"
+                       decoration-success="source == 'agency'"/>
+                <field name="brought_in_at"/>
+                <field name="signup_rate" widget="percentage"/>
+                <field name="recurring_rate" widget="percentage"/>
+                <field name="recurring_until"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'ending'"
+                       decoration-muted="state == 'ended'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_liquidity_agency_agreement_form" model="ir.ui.view">
+        <field name="name">liquidity.agency.agreement.form</field>
+        <field name="model">liquidity.agency.agreement</field>
+        <field name="arch" type="xml">
+            <form string="Agency agreement">
+                <header>
+                    <button name="action_activate" type="object"
+                            string="Activate" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_end" type="object"
+                            string="End (six-month ramp)"
+                            class="btn-secondary"
+                            invisible="state not in ('active', 'ending')"
+                            help="Starts a six-month ramp rather than a cliff.
+                                  The agreement stops earning after it."/>
+                    <button name="action_reopen" type="object"
+                            string="Reopen" class="btn-secondary"
+                            invisible="state != 'ended'"
+                            help="Restores the recurring bonus. It does NOT
+                                  restore the signup commission: that was
+                                  earned once, at the start."/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,ending,ended"/>
+                </header>
+                <sheet>
+                    <!-- The rule, stated where it is decided. -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="source == 'agency'">
+                        <p class="mb-0">
+                            <strong>This customer is Vertel's.</strong> An agency
+                            agreement on a Vertel customer earns nothing — no
+                            signup commission and no recurring bonus. The rule
+                            has no back door: allowing it would give the agency
+                            an incentive to convert Vertel customers.
+                        </p>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="agency_partner_id"/>
+                            <field name="tenant_id"/>
+                            <field name="source"/>
+                            <field name="brought_in_at"/>
+                        </group>
+                        <group>
+                            <field name="signup_rate" widget="percentage"/>
+                            <field name="signup_paid_at"/>
+                            <field name="recurring_rate" widget="percentage"/>
+                            <field name="recurring_from"/>
+                            <field name="recurring_until"/>
+                            <field name="ended_at"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note" placeholder="Why, and anything the
+                                                      next reader needs"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_liquidity_agency_agreement_search" model="ir.ui.view">
+        <field name="name">liquidity.agency.agreement.search</field>
+        <field name="model">liquidity.agency.agreement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agency_partner_id"/>
+                <field name="tenant_id"/>
+                <filter name="active" string="Active"
+                        domain="[('state', '=', 'active')]"/>
+                <filter name="ending" string="Ending"
+                        domain="[('state', '=', 'ending')]"/>
+                <filter name="agency_customers" string="Agency customers"
+                        domain="[('source', '=', 'agency')]"/>
+                <group expand="0" string="Group by">
+                    <filter name="by_agency" string="Agency"
+                            context="{'group_by': 'agency_partner_id'}"/>
+                    <filter name="by_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_liquidity_agency_agreement" model="ir.actions.act_window">
+        <field name="name">Agency agreements</field>
+        <field name="res_model">liquidity.agency.agreement</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No agreements yet</p>
+            <p>An agreement records what an agency earns for a customer it
+               brought in. It computes the basis — it does not invoice or pay
+               out.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_liquidity_agency_agreement"
+              name="Agency agreements"
+              parent="menu_liquidity_portfolio_config"
+              action="action_liquidity_agency_agreement"
+              sequence="20"/>
+
+</odoo>

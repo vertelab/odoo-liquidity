@@ -6,3 +6,4 @@ from . import test_import
 from . import test_drivers
 from . import test_accounts
 from . import test_bridge_client
+from . import test_agency_commission

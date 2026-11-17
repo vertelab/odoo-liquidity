@@ -104,7 +104,9 @@ calls read methods, but the key itself is as broad as the user it belongs to.
     "data": [
         "security/liquidity_portfolio_security.xml",
         "security/ir.model.access.csv",
+        "data/ir_cron.xml",
         "views/liquidity_tenant_views.xml",
+        "views/liquidity_agency_agreement_views.xml",
         "views/liquidity_tenant_company_views.xml",
         "views/menus.xml",
     ],

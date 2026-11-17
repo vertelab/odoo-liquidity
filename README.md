@@ -304,6 +304,36 @@ The three reasons a bridge is unusable are kept apart, because they need
 different actions: no bridge installed, switched off at the customer, or
 impersonation refused.
 
+#### Agency commission
+
+A firm that brings in a customer is paid for it. The model is Spiris' two-part
+split, with the ending written down:
+
+| When | What |
+|---|---|
+| At onboarding | 30 % of the first subscription period |
+| Year 1+ | 10 % at ten customers, 20 % at twenty |
+| When it ends | six-month ramp, then zero |
+
+**Four rules, each closing a way to game the model:**
+
+1. Only an *active* agreement on a *paying* customer earns anything. A customer
+   who stopped paying still exists in the portfolio; the commission must not.
+2. **Vertel's own customers cannot be claimed** — no signup, no recurring bonus,
+   no back door. Allowing it would give the agency an incentive to convert
+   Vertel customers.
+3. **A returning customer is not a new customer.** `brought_in_at` survives the
+   round trip, and `signup_paid_at` records that the signup was earned, so a
+   reopened agreement cannot earn it twice.
+4. **Ending is a ramp, not a cliff.** Six months, then zero.
+
+`recurring_rate` is deliberately **not stored**: it depends on how many
+agreements the agency has, which changes when *any other* agreement is created
+— and Odoo's dependency system cannot express "any record of this agency". A
+stored compute would silently go stale at the first agreement.
+
+The agreement computes the basis. It does not invoice and does not pay out.
+
 #### Not yet
 
 Mirrored chat and the customer-initiated work order flow are separate changes.

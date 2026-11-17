@@ -206,6 +206,18 @@ class LiquidityTenant(models.Model):
     def write(self, vals):
         if vals.get("base_url"):
             vals["base_url"] = vals["base_url"].rstrip("/")
+        if "source" in vals:
+            # A customer is either Vertel's or an agency's, and the commission
+            # rule depends on that being unambiguous. Changing it later would
+            # let a customer be re-labelled to create a claim that did not
+            # exist when they were onboarded.
+            for tenant in self:
+                if tenant.source and tenant.source != vals["source"]:
+                    raise ValidationError(
+                        _("Who the customer belongs to is set at onboarding "
+                          "and cannot be changed. %(name)s is %(current)s.",
+                          name=tenant.name, current=tenant.source)
+                    )
         return super().write(vals)
 
     # -- credentials -------------------------------------------------------
